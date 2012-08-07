@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module>
+	<title>Shoutbox</title>
+	<description>Shoutbox for your forum that can update itself without a single page reload! Javascrript is required.</description>
+	<version>1.0</version>
+	<name>shoutbox</name>
+</module>
