@@ -59,7 +59,7 @@ class ShinyBearIntegration
 	 * @param string &$call The function to call for front page integration.
 	 * @return void
 	 */
-	public static function default_action(&$call)
+	public static function default_action()
 	{
 		global $modSettings, $user_info;
 
@@ -71,7 +71,7 @@ class ShinyBearIntegration
 		if (isset($_REQUEST['xml']))
 			return;
 
-		$call = 'ShinyBear::init';
+		return 'ShinyBear::init';
 	}
 
 	/**
