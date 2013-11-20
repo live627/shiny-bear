@@ -199,6 +199,7 @@ class ShinyBearIntegration
 	{
 		global $modSettings, $sourcedirs, $user_info;
 
+		$modSettings['sb_portal_mode'] = true;
 	}
 
 	public static function load_theme()
