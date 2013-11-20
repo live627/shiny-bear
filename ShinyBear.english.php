@@ -81,8 +81,4 @@ $txt['sb_admin_manage_modules'] = 'Manage Modules';
 // Errors
 $txt['sb_module_error'] = 'There is an error with this module!';
 
-// Core Features in the AdminCP
-$txt['core_settings_item_sb'] = 'Shiny Bear';
-$txt['core_settings_item_sb_desc'] = 'Shiny Bear allows you to add the portal you have always envisiond to your forum.';
-
 ?>
