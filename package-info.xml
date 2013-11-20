@@ -17,7 +17,6 @@
 		<hook hook="integrate_profile_areas" function="ShinyBearIntegration::profile_areas" file="$sourcedir/Class-ShinyBear.php">Add the front page</hook>
 		<hook hook="integrate_pre_load" function="ShinyBearIntegration::pre_load" file="$sourcedir/Class-ShinyBear.php">Add the front page</hook>
 		<hook hook="integrate_load_theme" function="ShinyBearIntegration::load_theme" file="$sourcedir/Class-ShinyBear.php">Add the front page</hook>
-		<hook hook="integrate_core_features" function="ShinyBearIntegration::core_features" file="$sourcedir/Class-ShinyBear.php">Add the front page</hook>
 		<hook hook="integrate_load_permissions" function="ShinyBearIntegration::load_permissions" file="$sourcedir/Class-ShinyBear.php">Add the front page</hook>
 		<database>install.php</database>
 		<require-dir name="sb_extra" destination="$boarddir" />
@@ -26,7 +25,6 @@
 		<require-file name="ShinyBear.english.php" destination="$languagedir" />
 		<require-file name="ShinyBear.template.php" destination="$themedir" />
 		<require-file name="shinybear.css" destination="$themedir/css" />
-		<require-file name="feature_sb.png" destination="$themes_dir/default/images/admin" />
 		<redirect url="?action=admin;area=corefeatures#js_feature_sb" />
 	</install>
 	<uninstall for="2.1 - 2.1.99">
@@ -37,7 +35,6 @@
 		<remove-file name="$languagedir/ShinyBear.english.php" />
 		<remove-file name="$themedir/ShinyBear.template.php" />
 		<remove-file name="$themedir/css/shinybear.css" />
-		<remove-file name="$imagesdir/admin/feature_sb.png" />
 	</uninstall>
 
 </package-info>

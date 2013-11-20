@@ -199,8 +199,6 @@ class ShinyBearIntegration
 	{
 		global $modSettings, $sourcedirs, $user_info;
 
-		// Is Shiny Bear enabled in the Core Features?
-		$modSettings['sb_portal_mode'] = isset($modSettings['admin_features']) ? in_array('sb', explode(',', $modSettings['admin_features'])) : false;
 	}
 
 	public static function load_theme()
@@ -239,36 +237,6 @@ class ShinyBearIntegration
 		// Kick off time!
 		$sb = new ShinyBear();
 		$sb->load();
-	}
-
-	public static function core_features(&$core_features)
-	{
-		global $modSettings;
-
-		if (empty($modSettings['sb_portal_mode']))
-			loadLanguage('ShinyBear');
-
-		/*
-		 * We must clear the entire cache when this core feature is saved so
-		 * that the menu can update itself, since it is cached at level 2 or
-		 * higher.
-		 */
-		$sb_core_feature = array(
-			'url' => 'action=admin;area=sbmodules',
-			'save_callback' => create_function('$value', '
-				clean_cache();
-			'),
-		);
-
-		$new_core_features = array();
-		foreach ($core_features as $area => $info)
-		{
-			$new_core_features[$area] = $info;
-			if ($area == 'rg')
-				$new_core_features['sb'] = $sb_core_feature;
-		}
-		$core_features = $new_core_features;
-
 	}
 
 	/**
