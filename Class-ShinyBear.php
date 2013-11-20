@@ -659,16 +659,16 @@ class ShinyBear
 				{
 					sId: \'' . $data['type'] . 'collapse_' . $data['id'] . '\',
 					srcExpanded: smf_images_url + \'/collapse.gif\',
-					altExpanded: ' . JavaScriptEscape($txt['upshrink_description']) . ',
+					altExpanded: ' . JavaScriptEscape($txt['show']) . ',
 					srcCollapsed: smf_images_url + \'/expand.gif\',
-					altCollapsed: ' . JavaScriptEscape($txt['upshrink_description']) . '
+					altCollapsed: ' . JavaScriptEscape($txt['show']) . '
 				}
 			],
 			oThemeOptions: {
 				bUseThemeSettings: ' . ($user_info['is_guest'] ? 'false' : 'true') . ',
 				sOptionName: \'' . $data['type'] . 'collapse_' . $data['id'] . '\',
-				sSessionVar: ' . JavaScriptEscape($context['session_var']) . ',
-				sSessionId: ' . JavaScriptEscape($context['session_id']) . '
+				sSessionVar: smf_session_var,
+				sSessionId: smf_session_id
 			},
 			oCookieOptions: {
 				bUseCookie: ' . ($user_info['is_guest'] ? 'true' : 'false') . ',
