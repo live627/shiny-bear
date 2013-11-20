@@ -233,7 +233,8 @@ class ShinyBearIntegration
 		}
 
 		loadLanguage('ShinyBear');
-		loadTemplate('ShinyBear', 'shinybear');
+		loadTemplate('ShinyBear');
+		loadCSSFile('shinybear', array('default_theme' => true));
 
 		// Kick off time!
 		$sb = new ShinyBear();
