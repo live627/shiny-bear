@@ -146,7 +146,7 @@ class shinyBearModule_usercp extends shinyBearModuleBase
 				$time_fmt = '%H:%M' . $s;
 
 			echo '
-					<strong class="largetext">', $txt['hello_member_ndt'], ', ', $user_info['name'], '</strong><br />';
+					<strong class="largetext">', $txt['sb_hello'], ', ', $user_info['name'], '</strong><br />';
 
 			if (!empty($user_info['avatar']['image']))
 				echo '

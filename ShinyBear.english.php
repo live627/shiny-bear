@@ -44,6 +44,7 @@ $txt['sb_who_portal'] = 'Viewing the portal index of <a href="' . $scripturl . '
 
 // Module-Specific Strings
 $txt['sb_module_usercp'] = 'User Panel';
+$txt['sb_hello'] = 'Hello';
 $txt['sb_inbox'] = 'Inbox';
 $txt['sb_outbox'] = 'Outbox';
 $txt['sb_time'] = 'Current Time';
