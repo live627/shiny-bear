@@ -12,5 +12,4 @@ PHP 5.3.0
 ## Contributions
 - Fork this repository
 - Make your desired changes
-- Sign-off your commits to signify you agree to the DCO
 - And finally, submit a pull request
