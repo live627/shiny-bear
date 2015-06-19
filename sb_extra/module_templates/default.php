@@ -40,7 +40,7 @@ function sb_template_default($module, $style, $location = 0)
 			echo '
 				<div id="sb_module_', $module['type'], '_', $module['id'], '" class="cat_bar">
 					<h3 class="catbg">', !empty($modSettings['sb_collapse_modules']) && $module['header_display'] != 2 ? '
-						<img class="sb_curveblock floatright hand" id="' . $module['type'] . 'collapse_' . $module['id'] . '" src="' . $settings['images_url'] . '/collapse.gif" alt="" title="' . $txt['sb_core_modules'] . '" />' : '', '
+						<img class="floatright hand" id="' . $module['type'] . 'collapse_' . $module['id'] . '" src="' . $settings['images_url'] . '/collapse.gif" alt="" title="' . $txt['sb_core_modules'] . '" />' : '', '
 						' . $module['module_icon'] . $module['module_title'] . '
 					</h3>
 				</div>';
@@ -57,7 +57,7 @@ function sb_template_default($module, $style, $location = 0)
 			echo '
 					<div class="cat_bar">
 						<h3 class="catbg">', !empty($modSettings['sb_collapse_modules']) && $module['header_display'] != 2 ? '
-							<img class="sb_curveblock floatright hand" id="' . $module['type'] . 'collapse_' . $module['id'] . '" src="' . $settings['images_url'] . '/collapse.gif" alt="" title="' . $txt['sb_core_modules'] . '" />' : '', '
+							<img class="floatright hand" id="' . $module['type'] . 'collapse_' . $module['id'] . '" src="' . $settings['images_url'] . '/collapse.gif" alt="" title="' . $txt['sb_core_modules'] . '" />' : '', '
 							' . $module['module_icon'] . $module['module_title'] . '
 						</h3>
 					</div>';
