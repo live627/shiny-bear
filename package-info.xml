@@ -7,6 +7,7 @@
 	<type>modification</type>
 
 	<install for="2.1 - 2.1.99">
+        <code>check.php</code>
 		<readme type="file" parsebbc="true">install.txt</readme>
 		<credits url="livemods.net" license="MPL 1.1" copyright="&copy; 2012">Shiny Bear</credits>
 		<hook hook="integrate_default_action" function="ShinyBearIntegration::default_action" file="$sourcedir/Class-ShinyBear.php">Add the front page</hook>
