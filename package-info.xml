@@ -21,8 +21,7 @@
 		<hook hook="integrate_load_permissions" function="ShinyBearIntegration::load_permissions" file="$sourcedir/Class-ShinyBear.php">Add the front page</hook>
 		<database>install.php</database>
 		<require-dir name="sb_extra" destination="$boarddir" />
-		<require-file name="Class-ShinyBear.php" destination="$sourcedir" />
-		<require-file name="Class-ShinyBearModules.php" destination="$sourcedir" />
+		<require-dir name="ShinyBear" destination="$sourcedir" />
 		<require-file name="ShinyBear.english.php" destination="$languagedir" />
 		<require-file name="ShinyBear.template.php" destination="$themedir" />
 		<require-file name="shinybear.css" destination="$themedir/css" />
@@ -31,8 +30,7 @@
 	<uninstall for="2.1 - 2.1.99">
 		<readme type="file" parsebbc="true">uninstall.txt</readme>
 		<remove-dir name="$boarddir/sb_extra" />
-		<remove-file name="$sourcedir/Class-ShinyBear.php" />
-		<remove-file name="$sourcedir/Class-ShinyBearModules.php" />
+		<remove-dir name="$sourcedir/ShinyBear" />
 		<remove-file name="$languagedir/ShinyBear.english.php" />
 		<remove-file name="$themedir/ShinyBear.template.php" />
 		<remove-file name="$themedir/css/shinybear.css" />
