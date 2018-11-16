@@ -1,10 +1,6 @@
 <?php
-// Version: 1.0: Integration.php
-namespace ShinyBear\Services;
 
-if (!defined('SMF')) {
-	die('Hacking attempt...');
-}
+namespace ShinyBear;
 
 /**
  * @package ShinyBear

@@ -1,10 +1,6 @@
 <?php
-// Version: 1.0: Module.php
-namespace ShinyBear\Services\Modules;
 
-if (!defined('SMF')) {
-	die('Hacking attempt...');
-}
+namespace ShinyBear\Modules;
 
 /**
  * @package ShinyBear
@@ -20,7 +16,7 @@ interface iModule
 abstract class Module implements iModule
 {
 	protected $fields;
-	protected $err;
+	protected $err = false;
 
 	/*
 	 * Constructs the module.
@@ -32,7 +28,6 @@ abstract class Module implements iModule
 	public function __construct($fields = null)
 	{
 		$this->fields = $fields;
-		$this->err = false;
 	}
 
 	/*

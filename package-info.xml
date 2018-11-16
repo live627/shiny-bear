@@ -10,15 +10,15 @@
         <code>check.php</code>
 		<readme type="file" parsebbc="true">install.txt</readme>
 		<credits url="livemods.net" license="MPL 1.1" copyright="&copy; 2012">Shiny Bear</credits>
-		<hook hook="integrate_default_action" function="ShinyBearIntegration::default_action" file="$sourcedir/Class-ShinyBear.php">Add the front page</hook>
-		<hook hook="integrate_pre_log_stats" function="ShinyBearIntegration::pre_log_stats" file="$sourcedir/Class-ShinyBear.php">Add the front page</hook>
-		<hook hook="integrate_actions" function="ShinyBearIntegration::actions" file="$sourcedir/Class-ShinyBear.php">Add the front page</hook>
-		<hook hook="integrate_menu_buttons" function="ShinyBearIntegration::buttons" file="$sourcedir/Class-ShinyBear.php">Add the front page</hook>
-		<hook hook="integrate_admin_areas" function="ShinyBearIntegration::admin_areas" file="$sourcedir/Class-ShinyBear.php">Add the front page</hook>
-		<hook hook="integrate_profile_areas" function="ShinyBearIntegration::profile_areas" file="$sourcedir/Class-ShinyBear.php">Add the front page</hook>
-		<hook hook="integrate_pre_load" function="ShinyBearIntegration::pre_load" file="$sourcedir/Class-ShinyBear.php">Add the front page</hook>
-		<hook hook="integrate_load_theme" function="ShinyBearIntegration::load_theme" file="$sourcedir/Class-ShinyBear.php">Add the front page</hook>
-		<hook hook="integrate_load_permissions" function="ShinyBearIntegration::load_permissions" file="$sourcedir/Class-ShinyBear.php">Add the front page</hook>
+		<hook hook="integrate_default_action" function="ShinyBear\Integration::default_action" file="$sourcedir/ShinyBear/Integration.php">Add the front page</hook>
+		<hook hook="integrate_pre_log_stats" function="ShinyBear\Integration::pre_log_stats" file="$sourcedir/ShinyBear/Integration.php">Add the front page</hook>
+		<hook hook="integrate_actions" function="ShinyBear\Integration::actions" file="$sourcedir/ShinyBear/Integration.php">Add the front page</hook>
+		<hook hook="integrate_menu_buttons" function="ShinyBear\Integration::buttons" file="$sourcedir/ShinyBear/Integration.php">Add the front page</hook>
+		<hook hook="integrate_admin_areas" function="ShinyBear\Integration::admin_areas" file="$sourcedir/ShinyBear/Integration.php">Add the front page</hook>
+		<hook hook="integrate_profile_areas" function="ShinyBear\Integration::profile_areas" file="$sourcedir/ShinyBear/Integration.php">Add the front page</hook>
+		<hook hook="integrate_pre_load" function="ShinyBear\Integration::pre_load" file="$sourcedir/ShinyBear/Integration.php">Add the front page</hook>
+		<hook hook="integrate_load_theme" function="ShinyBear\Integration::load_theme" file="$sourcedir/ShinyBear/Integration.php">Add the front page</hook>
+		<hook hook="integrate_load_permissions" function="ShinyBear\Integration::load_permissions" file="$sourcedir/ShinyBear/Integration.php">Add the front page</hook>
 		<database>install.php</database>
 		<require-dir name="sb_extra" destination="$boarddir" />
 		<require-dir name="ShinyBear" destination="$sourcedir" />

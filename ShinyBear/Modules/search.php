@@ -1,10 +1,6 @@
 <?php
-// Version: 1.0: search.php
-namespace ShinyBear\Services\Modules;
 
-if (!defined('SMF')) {
-	die('Hacking attempt...');
-}
+namespace ShinyBear\Modules;
 
 /**
  * @package ShinyBear
