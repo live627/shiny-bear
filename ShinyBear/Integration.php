@@ -232,7 +232,7 @@ class Integration
 
 		loadLanguage('ShinyBear');
 		loadTemplate('ShinyBear');
-		loadCSSFile('shinybear', array('default_theme' => true));
+		loadCSSFile('shinybear.css', array('default_theme' => true), 'sb');
 
 		// Kick off time!
 		$sb = new ShinyBear();
@@ -262,4 +262,5 @@ class Integration
 			$permissionList['membergroup'] += array(
 				'sb_view' => array(false, 'sb', 'sb'),
 			);
-	}}
+	}
+}
