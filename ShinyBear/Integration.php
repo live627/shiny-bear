@@ -53,30 +53,40 @@ class Integration
 	 */
 	public static function actions(&$actions)
 	{
-		$action_array['sb'] = array('sb_source/EnvisionPortal.php', 'envisionActions');
-		$action_array['sbjs'] = array('sb_source/EnvisionPortal.php', 'envisionFiles');
-		$action_array['forum'] = array('BoardIndex.php', 'BoardIndex');
+		$actions['sb'] = array('sb_source/EnvisionPortal.php', 'envisionActions');
+		$actions['sbjs'] = array('sb_source/EnvisionPortal.php', 'envisionFiles');
+		$actions['forum'] = array('BoardIndex.php', 'BoardIndex');
+	}
+
+	/**
+	 * Map namespaces to directories
+	 *
+	 * @param array $classMap
+	 */
+	public static function autoload(&$classMap)
+	{
+		$classMap['ShinyBear\\'] = 'ShinyBear/';
 	}
 
 	/**
 	 * Set the default action
-	 *
-	 * @param string &$call The function to call for front page integration.
-	 * @return void
 	 */
 	public static function default_action()
 	{
-		global $modSettings, $user_info;
+		global $context, $txt, $modSettings;
 
-		// Don't continue if they're a guest and guest access is off.
-		if (!empty($modSettings['allow_guestAccess']) && $user_info['is_guest'])
-			return;
+		if (empty($modSettings['sb_portal_mode']) || !allowedTo('sb_view'))
+		{
+			require_once($sourcedir . '/BoardIndex.php');
 
-		// XML mode? Nothing more is required of us...
-		if (isset($_REQUEST['xml']))
-			return;
-
-		return 'ShinyBear::init';
+			call_user_func('BoardIndex');
+		}
+		else
+		{
+			$context['sub_template'] = 'portal';
+			$context['page_title'] = $context['forum_name'] . ' - ' . $txt['home'];
+			self::$sbHome = true;
+		}
 	}
 
 	/**
