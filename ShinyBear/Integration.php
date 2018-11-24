@@ -209,7 +209,7 @@ class Integration
 			return;
 
 		// Don't continue if they're a guest and guest access is off.
-		if (!empty($modSettings['allow_guestAccess']) && $user_info['is_guest'])
+		if (empty($modSettings['allow_guestAccess']) && $user_info['is_guest'])
 			return;
 
 		// XML mode? Nothing more is required of us...
