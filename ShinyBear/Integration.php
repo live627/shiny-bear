@@ -204,10 +204,6 @@ class Integration
 	{
 		global $context, $maintenance, $modSettings, $user_info;
 
-		// Protect against duplicate calls (if any).
-		if (!empty($context['theme_loaded']))
-			return;
-
 		// Don't continue if they're a guest and guest access is off.
 		if (empty($modSettings['allow_guestAccess']) && $user_info['is_guest'])
 			return;
