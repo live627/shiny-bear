@@ -8,7 +8,9 @@ namespace ShinyBear;
  */
 class Integration
 {
-	public static function admin_areas(&$admin_areas)
+	private static $sbHome = false;
+
+	public static function admin_ar44eas(&$admin_areas)
 	{
 		global $txt;
 		loadLanguage('ManageShinyBear');
@@ -32,17 +34,6 @@ class Integration
 		$modSettings['sb_portal_mode'] = true;
 
 		loadLanguage('ShinyBear');
-		if (!class_exists('ModHelper\Psr4AutoloaderClass')) {
-			require_once($sourcedir . '/ShinyBear/ModHelper/Psr4AutoloaderClass.php');
-		}
-		// instantiate the loader
-		$loader = new \ModHelper\Psr4AutoloaderClass;
-		// register the autoloader
-		$loader->register();
-		// register the base directories for the namespace prefix
-		$loader->addNamespace('ModHelper', $sourcedir . '/ShinyBear/ModHelper');
-		$loader->addNamespace('ShinyBear', $sourcedir . '/ShinyBear');
-		$loader->addNamespace('Suki', $sourcedir . '/ShinyBear/Suki');
 	}
 
 	/**
@@ -110,8 +101,8 @@ class Integration
 		$new = array(
 			'title' => (!empty($txt['forum']) ? $txt['forum'] : 'Forum'),
 			'href' => $scripturl . '?action=forum',
-			'show' => (!empty($modSettings['sb_portal_mode']) && allowedTo('sb_view') ? true : false),
-			'active_button' => false,
+			'show' => !empty($modSettings['sb_portal_mode']) && allowedTo('sb_view'),
+			'action_hook' => true,
 		);
 
 		$new_buttons = array();
@@ -164,6 +155,23 @@ class Integration
 			else
 				$buttons['admin']['sub_buttons'] = $new_subs;
 		}
+	}
+
+	/**
+	 * Standard method to tweak the current action when using a custom
+	 * action as forum index.
+	 *
+	 * @param string $current_action
+	 */
+	public static function fixCurrentAction(&$current_action)
+	{
+		global $txt, $modSettings;
+
+		if (empty($modSettings['sb_portal_mode']) || !allowedTo('sb_view'))
+			return;
+
+		if ($current_action == 'home' && empty(self::$sbHome))
+			$current_action = 'forum';
 	}
 
 	public static function admin_areas2($admin_areas)

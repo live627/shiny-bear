@@ -6,7 +6,7 @@
 	<version>1.0 Alpha</version>
 	<type>modification</type>
 
-	<install for="2.1 - 2.1.99">
+	<install for="2.1 Beta 4, 2.1 - 2.1.99">
         <code>check.php</code>
 		<readme type="file" parsebbc="true">install.txt</readme>
 		<credits url="livemods.net" license="MPL 1.1" copyright="&copy; 2012">Shiny Bear</credits>
@@ -14,6 +14,7 @@
 		<hook hook="integrate_pre_log_stats" function="ShinyBear\Integration::pre_log_stats" file="$sourcedir/ShinyBear/Integration.php">Add the front page</hook>
 		<hook hook="integrate_actions" function="ShinyBear\Integration::actions" file="$sourcedir/ShinyBear/Integration.php">Add the front page</hook>
 		<hook hook="integrate_menu_buttons" function="ShinyBear\Integration::buttons" file="$sourcedir/ShinyBear/Integration.php">Add the front page</hook>
+		<hook hook="integrate_current_action" function="ShinyBear\Integration::fixCurrentAction" file="$sourcedir/ShinyBear/Integration.php">Add the front page</hook>
 		<hook hook="integrate_admin_areas" function="ShinyBear\Integration::admin_areas" file="$sourcedir/ShinyBear/Integration.php">Add the front page</hook>
 		<hook hook="integrate_profile_areas" function="ShinyBear\Integration::profile_areas" file="$sourcedir/ShinyBear/Integration.php">Add the front page</hook>
 		<hook hook="integrate_pre_load" function="ShinyBear\Integration::pre_load" file="$sourcedir/ShinyBear/Integration.php">Add the front page</hook>
