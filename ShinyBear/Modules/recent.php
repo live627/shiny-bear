@@ -218,7 +218,7 @@ class recent extends Module
 								</td>
 							</tr>';
 			}
-		else
+			else
 			echo '
 							<tr class="windowbg2">
 								<td class="center">

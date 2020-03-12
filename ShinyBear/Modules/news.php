@@ -133,7 +133,7 @@ class news extends Module
 		while ($row = $smcFunc['db_fetch_assoc']($request))
 		{
 			$row['body'] = $this->truncate(strip_tags(strtr(parse_bbc($row['body'], $row['smileys_enabled'], $row['id_msg']), array('<br />' => "\n"))), 10);
-			$row['body'] = parse_bbc($row['body'], $row['smileys_enabled'], $row['id_msg']  . '-prv');
+			$row['body'] = parse_bbc($row['body'], $row['smileys_enabled'], $row['id_msg'] . '-prv');
 
 			// Censor the subject.
 			censorText($row['subject']);

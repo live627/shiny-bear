@@ -244,7 +244,7 @@ class ShinyBear
 				// !!! Is this really needed?
 				if (!isset($sb_modules[$row['x_pos']][$row['y_pos']]['modules'][$row['position']]))
 					if (empty($context['sb_mod_' . $row['type']]))
-						$context['sb_mod_' . $row['type']] = $row['type'] .  '_' . $row['id_position'];
+						$context['sb_mod_' . $row['type']] = $row['type'] . '_' . $row['id_position'];
 
 				$sb_modules[$row['x_pos']][$row['y_pos']]['modules'][$row['position']] = array(
 					'is_smf' => $smf_col,
@@ -265,7 +265,7 @@ class ShinyBear
 			ksort($sb_modules[$k]);
 			foreach ($sb_modules[$k] as $key => $sb)
 				if (is_array($sb_modules[$k][$key]))
-					foreach($sb_modules[$k][$key] as $pos => $mod)
+					foreach ($sb_modules[$k][$key] as $pos => $mod)
 					{
 						if ($pos != 'modules' || !is_array($sb_modules[$k][$key][$pos]))
 							continue;
@@ -370,7 +370,7 @@ class ShinyBear
 
 			foreach ($fields2 as $key => $field)
 				if (isset($field['type']))
-					$fields[$key] = $field['value'];//loadParameter(array(), $field['type'], $field['value']);
+					$fields[$key] = $field['value']; //loadParameter(array(), $field['type'], $field['value']);
 		}
 
 		$module = 'shinyBearModule_' . $data['type'];
