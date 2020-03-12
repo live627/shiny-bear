@@ -327,7 +327,7 @@ function sb_shoutbox($request, $get_value)
 
 				if (isset($row['can_mod']))
 				{
-					if($row['can_mod'] == 2)
+					if ($row['can_mod'] == 2)
 						$show_mod = $user_id == $user_info['id'];
 					else
 						$show_mod = $row['can_mod'];
@@ -336,7 +336,7 @@ function sb_shoutbox($request, $get_value)
 					$show_mod = 0;
 
 				$shout = '<div class="' . (!empty($_GET['class']) ? $_GET['class'] : 'windowbg' . ($count % 2 ? '' : '2') . '') . ' shout_' . $row['id_shout'] . '" style="' . ($count > 0 && empty($_GET['class']) || !empty($_GET['population']) ? 'border-bottom: 1px black dashed; ' : '') . 'overflow-x: hidden; padding: 8px; word-wrap: break-word; white-space: normal;' . (empty($textsize) ? ' font-size: 90%;' : '') . '" id="shout_' . $row['id_shout'] . '">' . (!empty($show_mod) ? '<img id="deleteshout_' . $row['id_shout'] . '" class="deleteshout floatright hand" onclick="removeShout(this, \'' . $moduleid . '\');" src="' . $settings['images_url'] . '/icons/quick_remove.gif" />' : '');
-				$shout .= '<a ' . (!empty($member_color) ? 'style="color: ' . $online_color . '" ' : '') . 'href="' . $scripturl . '?action=profile;u=' . $user_id . '">' . $user . '</a>: ' .  parse_bbc($message, true, '', $allowedBBC) . '<br /><span style="color: grey; font-size: 75%">' . $time . '</span></div>';
+				$shout .= '<a ' . (!empty($member_color) ? 'style="color: ' . $online_color . '" ' : '') . 'href="' . $scripturl . '?action=profile;u=' . $user_id . '">' . $user . '</a>: ' . parse_bbc($message, true, '', $allowedBBC) . '<br /><span style="color: grey; font-size: 75%">' . $time . '</span></div>';
 				$count++;
 				$xml_children[] = array(
 					'attributes' => array(
@@ -407,7 +407,7 @@ function sb_shoutbox($request, $get_value)
 		$data = list_getShouts(0, $limit, $sort, $where, $where_params, $moduleid);
 		if (isset($data[0]['can_mod']))
 		{
-			if($data[0]['can_mod'] == 2)
+			if ($data[0]['can_mod'] == 2)
 				$can_mod = $user_info['id'] == $data[0]['id_member'] ? 2 : 0;
 			else
 				$can_mod = $data[0]['can_mod'];

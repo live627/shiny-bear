@@ -49,7 +49,7 @@ class online extends Module
 			foreach ($membersOnlineStats['users_online'] as $user)
 				if ($user['group'] == $group['id'])
 					echo '
-									<li>', $user['hidden'] ? '<em>' . $user['link'] . '</em>' : $user['link'] , '</li>';
+									<li>', $user['hidden'] ? '<em>' . $user['link'] . '</em>' : $user['link'], '</li>';
 			echo '
 								</ul>
 							</li>';
