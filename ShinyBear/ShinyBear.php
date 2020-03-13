@@ -373,7 +373,7 @@ class ShinyBear
 					$fields[$key] = $field['value']; //loadParameter(array(), $field['type'], $field['value']);
 		}
 
-		$module = 'shinyBearModule_' . $data['type'];
+		$module = 'ShinyBear\Modules\\' . $data['type'];
 		if (!empty($fields))
 			$data['class'] = new $module($fields);
 		else
