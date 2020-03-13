@@ -12,12 +12,17 @@ class recent extends Module
 	 * Fetches recent topics.
 	 *
 	 * This function is split into three basic queries:
-	 * - Fetches the topics and their respective boards, ignoring those the user cannot see or wants to ignore. Returns an empty array if none are found.
+	 *
+	 * - Fetches the topics and their respective boards, ignoring those the
+	 * user cannot see or wants to ignore. Returns an empty array if none are found.
 	 * - If the logged user is not a guest, count the number of new posts per topic.
 	 * - And finally, the third query actually fetches the meat and bone of the first message in each topic.
 	 *
 	 * Several major diifferences set this function apart from ssi_recentTopics():
-	 * - The huge, scary, hulking query is split in two. Shaves time off here. Went from evaluating potentially (many) many null rows at a Cartesian product level, down to a known subset. Immediate savings.
+	 *
+	 * - The huge, scary, hulking query is split in two. Shaves time off here. Went
+	 * from evaluating potentially (many) many null rows at a Cartesian product
+	 * level, down to a known subset. Immediate savings.
 	 * - Unread count for members.
 	 * - Cache. Can never get enough.
 	 *
@@ -51,7 +56,7 @@ class recent extends Module
 			SELECT
 				t.id_topic, b.id_board, b.name AS board_name
 			FROM {db_prefix}topics AS t
-				INNER JOIN {db_prefix}messages AS ml ON (ml.id_msg = t.id_last_msg)
+				JOIN {db_prefix}messages AS ml ON (ml.id_msg = t.id_last_msg)
 				LEFT JOIN {db_prefix}boards AS b ON (b.id_board = t.id_board)
 			WHERE t.id_last_msg >= {int:min_message_id}' . (empty($exclude_boards) ? '' : '
 				AND b.id_board NOT IN ({array_int:exclude_boards})') . (empty($include_boards) ? '' : '
@@ -60,6 +65,7 @@ class recent extends Module
 				AND t.approved = {int:is_approved}
 				AND ml.approved = {int:is_approved}' : '') . ($me ? '
 				AND t.id_member_started = {int:current_member}' : '') . '
+				AND t.id_topic != 1
 			LIMIT ' . $num_recent,
 			array(
 				'include_boards' => empty($include_boards) ? '' : $include_boards,
@@ -84,13 +90,15 @@ class recent extends Module
 		{
 			$request = $smcFunc['db_query']('', '
 				SELECT
-					m.id_topic, COUNT(DISTINCT m.id_msg) AS co, IFNULL(lt.id_msg, IFNULL(lmr.id_msg, -1)) + 1 AS new_from
+					m.id_topic, COUNT(*) AS co, COALESCE(lt.id_msg, lmr.id_msg, -1) + 1 AS new_from
 				FROM {db_prefix}messages AS m
 					LEFT JOIN {db_prefix}log_topics AS lt ON (lt.id_topic = m.id_topic AND lt.id_member = {int:current_member})
 					LEFT JOIN {db_prefix}log_mark_read AS lmr ON (lmr.id_board = m.id_board AND lmr.id_member = {int:current_member})
 				WHERE
 					m.id_topic IN ({array_int:topic_list})
-					AND (m.id_msg > IFNULL(lt.id_msg, IFNULL(lmr.id_msg, 0)))',
+					AND m.id_msg > COALESCE(lt.id_msg, lmr.id_msg, 0)
+					AND approved = 1
+				GROUP BY lt.id_msg, lmr.id_msg, m.id_topic',
 				array(
 					'current_member' => $user_info['id'],
 					'topic_list' => $topic_list
@@ -104,10 +112,10 @@ class recent extends Module
 		$request = $smcFunc['db_query']('', '
 			SELECT
 				t.id_topic, ml.poster_time, mf.subject, ml.id_topic, ml.id_member, ml.id_msg, t.num_replies, t.num_views,
-				IFNULL(mem.real_name, ml.poster_name) AS poster_name, SUBSTRING(ml.body, 1, 384) AS body, ml.smileys_enabled, ml.icon
+				COALESCE(mem.real_name, ml.poster_name) AS poster_name, SUBSTRING(ml.body, 1, 384) AS body, ml.smileys_enabled, ml.icon
 			FROM {db_prefix}topics AS t
-				INNER JOIN {db_prefix}messages AS ml ON (ml.id_msg = t.id_last_msg)
-				INNER JOIN {db_prefix}messages AS mf ON (mf.id_msg = t.id_first_msg)
+				JOIN {db_prefix}messages AS ml ON (ml.id_msg = t.id_last_msg)
+				JOIN {db_prefix}messages AS mf ON (mf.id_msg = t.id_first_msg)
 				LEFT JOIN {db_prefix}members AS mem ON (mem.id_member = ml.id_member)
 			WHERE t.id_topic IN ({array_int:topic_list})',
 			array(
@@ -119,10 +127,6 @@ class recent extends Module
 		$posts = array();
 		while ($row = $smcFunc['db_fetch_assoc']($request))
 		{
-			// $row['body'] = preg_split('/(?<!\d)\.(?!\d)[\s|<br \/>|&nbsp;]/', $row['body']);
-			// $row['body'] = strip_tags(strtr(parse_bbc($row['body'][0], $row['smileys_enabled'], $row['id_msg']  . '-prv'), array('<br>' => '&#10;')));
-
-			// Censor the subject.
 			censorText($row['subject']);
 			censorText($row['body']);
 
@@ -149,16 +153,10 @@ class recent extends Module
 			// Build the array.
 			$posts[$row['id_msg']] = array(
 				'board' => array(
-					'id' => $topics[$row['id_topic']]['id_board'],
-					'name' => $topics[$row['id_topic']]['board_name'],
-					'href' => $scripturl . '?board=' . $topics[$row['id_topic']]['id_board'] . '.0',
 					'link' => '<a href="' . $scripturl . '?board=' . $topics[$row['id_topic']]['id_board'] . '.0">' . $topics[$row['id_topic']]['board_name'] . '</a>',
 				),
 				'topic' => $row['id_topic'],
 				'poster' => array(
-					'id' => $row['id_member'],
-					'name' => $row['poster_name'],
-					'href' => empty($row['id_member']) ? '' : $scripturl . '?action=profile;u=' . $row['id_member'],
 					'link' => empty($row['id_member']) ? $row['poster_name'] : '<a href="' . $scripturl . '?action=profile;u=' . $row['id_member'] . '">' . $row['poster_name'] . '</a>'
 				),
 				'subject' => $row['subject'],
@@ -168,10 +166,7 @@ class recent extends Module
 				'preview' => $row['body'],
 				'time' => timeformat($row['poster_time'], '%a, ' . $time_fmt),
 				'href' => $scripturl . '?topic=' . $row['id_topic'] . '.msg' . $row['id_msg'] . ';topicseen#new',
-				'link' => '<a href="' . $scripturl . '?topic=' . $row['id_topic'] . '.msg' . $row['id_msg'] . '#new" rel="nofollow">' . $row['subject'] . '</a>',
-				'is_new' => !empty($topics[$row['id_topic']]['new_from']),
-				'new_from' => empty($topics[$row['id_topic']]['new_from']) ? 0 : $topics[$row['id_topic']]['new_from'],
-				'co' => empty($topics[$row['id_topic']]['new_from']) ? 0 : $topics[$row['id_topic']]['co'],
+				'co' => isset($topics[$row['id_topic']]['co']) ? $topics[$row['id_topic']]['co'] : 0,
 			);
 		}
 		$smcFunc['db_free_result']($request);
@@ -186,12 +181,13 @@ class recent extends Module
 
 		$context['topics'] = $this->getTopics();
 
-		// Mark read button
 		$context['mark_read_button'] = array(
-			'markread' => array('text' => 'mark_as_read', 'image' => 'markread.png', 'lang' => true, 'url' => $scripturl . '?action=markasread;sa=all;' . $context['session_var'] . '=' . $context['session_id']),
+			'markread' => array(
+				'text' => 'mark_as_read',
+				'image' => 'markread.png',
+				'url' => $scripturl . '?action=markasread;sa=all;' . $context['session_var'] . '=' . $context['session_id']
+			),
 		);
-
-		// Allow mods to add additional buttons here
 		call_integration_hook('integrate_mark_read_button');
 
 		echo '
@@ -206,9 +202,9 @@ class recent extends Module
 									', $post['poster']['link'], '
 								</td>
 								<td class="w50">
-									', $post['board']['name'], ' &gt; ';
+									', $post['board']['link'], ' &gt; ';
 
-				if ($post['is_new'] && !$user_info['is_guest'] && !empty($post['co']))
+				if (!$user_info['is_guest'] && !empty($post['co']))
 					echo '<span class="new_posts">' . $post['co'] . '</span>';
 
 				echo '<a href="', $post['href'], '">', $post['subject'], '</a>
@@ -229,9 +225,7 @@ class recent extends Module
 		echo '
 						</table>';
 
-		// Show the mark all as read button?
-		if ($settings['show_mark_read'] && !empty($context['topics']))
-		echo '
-						<div class="mark_read">', template_button_strip($context['mark_read_button'], 'right'), '</div>';
+		if (!empty($context['topics']))
+			template_button_strip($context['mark_read_button'], 'right');
 	}
 }
