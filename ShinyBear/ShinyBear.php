@@ -448,10 +448,10 @@ class ShinyBear
 				'stat_choices' => array(
 					'type' => 'callback',
 					'callback_func' => 'checklist',
-					'preload' => create_function('&$field', '
-						$field[\'options\'] = sb_list_checks($field[\'value\'], array(\'members\', \'posts\', \'topics\', \'categories\', \'boards\', \'ontoday\', \'onever\'), array(), $field[\'label\'], 0);
+					'preload' => function($field){
+						$field['options'] = sb_list_checks($field['value'], array('members', 'posts', 'topics', 'categories', 'boards', 'ontoday', 'onever'), array(), $field['label'], 0);
 
-						return $field;'),
+						return $field;},
 					'value' => '0,1,2,5,6',
 					'order' => true,
 				),
@@ -474,20 +474,20 @@ class ShinyBear
 				'show_online' => array(
 					'type' => 'callback',
 					'callback_func' => 'checklist',
-					'preload' => create_function('&$field', '
-						$field[\'options\'] = sb_list_checks($field[\'value\'], array(\'users\', \'buddies\', \'guests\', \'hidden\', \'spiders\'), array(), $field[\'label\'], 0);
+					'preload' => function($field){
+						$field['options'] = sb_list_checks($field['value'], array('users', 'buddies', 'guests', 'hidden', 'spiders'), array(), $field['label'], 0);
 
-						return $field;'),
+						return $field;},
 					'value' => '0,1,2',
 					'order' => true,
 				),
 				'online_groups' => array(
 					'type' => 'callback',
 					'callback_func' => 'list_groups',
-					'preload' => create_function('&$field', '
-						$field[\'options\'] = sb_list_groups($field[\'value\'], \'-1,0,3\');
+					'preload' => function($field){
+						$field['options'] = sb_list_groups($field['value'], '-1,0,3');
 
-						return $field;'),
+						return $field;},
 					'value' => '-3',
 				),
 			),
@@ -500,10 +500,10 @@ class ShinyBear
 				),
 				'board' => array(
 					'type' => 'select',
-					'preload' => create_function('&$field', '
-						$field[\'options\'] = sb_list_boards();
+					'preload' => function($field){
+						$field['options'] = sb_list_boards();
 
-						return $field;'),
+						return $field;},
 						'value' => '1',
 					),
 				'limit' => array(
@@ -574,10 +574,10 @@ class ShinyBear
 				'show_options' => array(
 					'type' => 'callback',
 					'callback_func' => 'checklist',
-					'preload' => create_function('&$field', '
-						$field[\'options\'] = sb_list_checks($field[\'value\'], array(\'events\', \'holidays\', \'birthdays\'), array(), $field[\'label\'], 0);
+					'preload' => function($field){
+						$field['options'] = sb_list_checks($field['value'], array('events', 'holidays', 'birthdays'), array(), $field['label'], 0);
 
-						return $field;'),
+						return $field;},
 					'value' => '0,1,2',
 					'order' => true,
 				),
