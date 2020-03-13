@@ -10,6 +10,7 @@ class news extends Module
 {
 	/**
 	 * Cuts a string up until a given number of words.
+	 *
 	 * - Doesn't slice words. It CAN interrupt a sentence, however...
 	 * - Preserves all whitespace characters.
 	 *
@@ -51,6 +52,7 @@ class news extends Module
 	 * Fetches topics from a board.
 	 *
 	 * This function is split into three basic queries:
+	 *
 	 * - Fetches the specified board. If the user cannot see or wants to ignore it, screw it.
 	 * - Gets the list of topiics. Returns an empty array if none are found.
 	 * - And finally, the third query actually fetches the meat and bone of the first message in each topic.
@@ -99,8 +101,8 @@ class news extends Module
 		);
 
 		$post_list = array();
-		while ($row = $smcFunc['db_fetch_assoc']($request))
-			$post_list[] = $row['id_first_msg'];
+		while (list ($id_msg) = $smcFunc['db_fetch_row']($request))
+			$post_list[] = $id_msg;
 		$smcFunc['db_free_result']($request);
 
 		if (empty($post_list))
@@ -108,11 +110,11 @@ class news extends Module
 
 		$request = $smcFunc['db_query']('', '
 			SELECT
-				m.subject, IFNULL(mem.real_name, m.poster_name) AS poster_name, m.poster_time,
+				m.subject, COALESCE(mem.real_name, m.poster_name) AS poster_name, m.poster_time,
 				t.num_replies, t.num_views, m.body, m.smileys_enabled, m.id_msg, m.icon,
 				t.id_topic, m.id_member
 			FROM {db_prefix}topics AS t
-				INNER JOIN {db_prefix}messages AS m ON (m.id_msg = t.id_first_msg)
+				JOIN {db_prefix}messages AS m ON (m.id_msg = t.id_first_msg)
 				LEFT JOIN {db_prefix}members AS mem ON (mem.id_member = m.id_member)
 			WHERE t.id_first_msg IN ({array_int:post_list})',
 			array(
@@ -139,7 +141,7 @@ class news extends Module
 			censorText($row['subject']);
 			censorText($row['body']);
 
-			$color_class = '';
+			$color_class = 'padding';
 			// Pinned topics should get a different color, too.
 			if (!empty($row['is_sticky']))
 				$color_class .= ' sticky';
@@ -157,7 +159,6 @@ class news extends Module
 				'preview' => $row['body'],
 				'time' => timeformat($row['poster_time']),
 				'href' => $scripturl . '?topic=' . $row['id_topic'] . '.0',
-				'link' => '<a href="' . $scripturl . '?topic=' . $row['id_topic'] . '.msg' . $row['id_msg'] . '#new" rel="nofollow">' . $row['subject'] . '</a>',
 				'poster' => !empty($row['id_member']) ? '<a href="' . $scripturl . '?action=profile;u=' . $row['id_member'] . '">' . $row['poster_name'] . '</a>' : $row['poster_name'],
 				'icon' => '<img src="' . $settings[$icon_sources[$row['icon']]] . '/post/' . $row['icon'] . '.png" class="icon" alt="' . $row['icon'] . '" />',
 				'can_reply' => !empty($row['locked']) ? $can_moderate : $can_reply_any || ($can_reply_own && $row['first_id_member'] == $user_info['id']),
@@ -188,48 +189,30 @@ class news extends Module
 			return;
 		}
 
-		$use_bg2 = true;
 		foreach ($input as $topic)
 		{
-			$use_bg2 = !$use_bg2;
-
 			echo '
-						<div class="title_bar">
-							<h3 class="titlebg">
+						<div class="sub_bar">
+							<h4 class="subbg">
 								', $topic['icon'], '
 								', $topic['subject'], '
-							</h3>
+							</h4>
 						</div>
-						<div class="', $use_bg2 ? 'windowbg2' : 'windowbg', $topic['style'], '">';
+						<div class="', $topic['style'], '">';
 
 			echo '
 							<p class="smalltext">', $txt['posted_by'], ' ', $topic['poster'], ' | ', $topic['time'], '
 							(', $topic['views'], ' ', $txt['views'], ')';
 
-			if (!empty($topic['replies']) || $topic['can_reply'])
-			{
-				if (!empty($topic['replies']))
-					echo '
+			if (!empty($topic['replies']))
+				echo '
 							<a href="', $topic['href'], '">', $topic['replies'], ' ', $txt['replies'], '</a>';
 
-					if ($topic['can_reply'])
-						echo ' | ';
-
-				if ($topic['can_reply'])
-				{
-					// If quick reply is open, point directly to it, otherwise use the regular reply page
-					if (empty($options['display_quick_reply']) || $options['display_quick_reply'] != 2)
-						$reply_url = $scripturl . '?action=post;topic=' . $topic['id'] . '.0;last_msg=' . $topic['id'];
-					else
-						$reply_url = substr($topic['href'], 0, strpos($topic['href'], '#')) . '#quickreply';
-
-					echo '
-							<a href="', $reply_url, '">', $txt['reply'], '</a>';
-				}
+			if ($topic['can_reply'])
+				echo ' | <a href="', $topic['href'], '#quickreply">', $txt['reply'], '</a>';
 
 				echo '
 							</p>';
-			}
 
 			echo '
 							', $topic['preview'], '
