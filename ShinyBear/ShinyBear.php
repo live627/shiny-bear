@@ -220,13 +220,8 @@ class ShinyBear
 			$num = $smcFunc['db_num_rows']($request);
 			if (empty($num))
 				return;
-
-			$old_row = 0;
-			$view_groups = array();
-
-			// Let the theme know we have a layout.
-			$context['has_sb_layout'] = true;
 		}
+		$sb_modules = array();
 		$loaded_ids = array();
 
 		while ($row = $smcFunc['db_fetch_assoc']($request))
@@ -250,12 +245,6 @@ class ShinyBear
 			if (!is_null($row['id_position']) && !empty($row['id_layout_position']))
 			{
 				$loaded_ids[] = $row['id_position'];
-				// Store $context variables for each module. Mod Authors can use these for unique ID values, function names, etc.
-				// !!! Is this really needed?
-				if (!isset($sb_modules[$row['x_pos']][$row['y_pos']]['modules'][$row['position']]))
-					if (empty($context['sb_mod_' . $row['type']]))
-						$context['sb_mod_' . $row['type']] = $row['type'] . '_' . $row['id_position'];
-
 				$sb_modules[$row['x_pos']][$row['y_pos']]['modules'][$row['position']] = array(
 					'is_smf' => $smf_col,
 					'modify_link' => $user_info['is_admin'] ? ' [<a href="' . $scripturl . '?action=admin;area=sbmodules;sa=modify;in=' . $row['id_position'] . ';' . $context['session_var'] . '=' . $context['session_id'] . '">' . $txt['modify'] . '</a>]' : '',
@@ -285,8 +274,6 @@ class ShinyBear
 		}
 
 		$module_context = $this->process_module_context($this->load_module_context(), $loaded_ids);
-		require_once($sourcedir . '/Class-ShinyBearModules.php');
-
 		foreach ($sb_modules as $row_id => $row_data)
 			foreach ($row_data as $column_id => $column_data)
 				if (isset($column_data['modules']))
@@ -306,31 +293,18 @@ class ShinyBear
 		// Load user-defined module configurations.
 		$request = $smcFunc['db_query']('', '
 			SELECT
-				name, em.type AS module_type, value
+				name, type, value
 			FROM {db_prefix}sb_module_positions AS emp
-				LEFT JOIN {db_prefix}sb_modules AS em ON (em.id_module = emp.id_module)
-				LEFT JOIN {db_prefix}sb_module_field_data AS emd ON (emd.id_module_position = emp.id_position)
+				JOIN {db_prefix}sb_modules AS em ON (em.id_module = emp.id_module)
+				JOIN {db_prefix}sb_module_field_data AS emd ON (emd.id_module_position = emp.id_position)
 			WHERE emp.id_position IN ({array_int:loaded_ids})',
 			array(
 				'loaded_ids' => $loaded_ids,
 			)
 		);
 
-		while ($row = $smcFunc['db_fetch_assoc']($request))
-		{
-			$module_type = $row['module_type'];
-
-			if (!empty($row['name']))
-				$fields[$row['name']] = array(
-					'value' => $row['value'],
-			);
-		}
-
-		// Merge the default and custom configs together.
-		$info = $module_context[$module_type];
-
-		if (!empty($fields))
-			$module_context[$module_type] = array_rsblace_recursive($module_context[$module_type], $fields);
+		while (list ($name, $type, $value) = $smcFunc['db_fetch_row']($request))
+			$module_context[$type][$name] = $value;
 
 		return $module_context;
 	}
@@ -345,9 +319,6 @@ class ShinyBear
 
 		if ($full_layout === false)
 			return $data;
-
-		if (file_exists($context['sb_module_modules_dir'] . '/' . $data['type'] . '/main.php'))
-			require_once($context['sb_module_modules_dir'] . '/' . $data['type'] . '/main.php');
 
 		// Load the module template.
 		if (empty($fields['module_template']['value']) || !empty($fields['module_template']['value']) && !file_exists($context['sb_module_template'] . $fields['module_template']['value']))
