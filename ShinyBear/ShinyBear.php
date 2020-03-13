@@ -16,19 +16,53 @@ class ShinyBear
 {
 	/**
 	 * Initialize front page.
-	 *
-	 * @return void
 	 */
 	public function init()
 	{
 		global $context, $txt;
 
-		// A mobile device doesn't require a portal...
-		//if (WIRELESS)
-		//	redirectexit('action=forum');
-
 		$context['sub_template'] = 'portal';
 		$context['page_title'] = $context['forum_name'] . ' - ' . $txt['home'];
+	}
+
+	/**
+	 * @return bool whether this is an attachment, avatar, toggle of editor buttons, theme option, XML feed, popup, etc.
+	 */
+	private function canSkipAction($da_action)
+	{
+		$skipped_actions = array(
+			'about:unknown' => true,
+			'clock' => true,
+			'dlattach' => true,
+			'findmember' => true,
+			'helpadmin' => true,
+			'jsoption' => true,
+			'likes' => true,
+			'loadeditorlocale' => true,
+			'modifycat' => true,
+			'pm' => array('sa' => array('popup')),
+			'profile' => array('area' => array('popup', 'alerts_popup')),
+			'requestmembers' => true,
+			'smstats' => true,
+			'suggest' => true,
+			'verificationcode' => true,
+			'viewquery' => true,
+			'viewsmfile' => true,
+			'xmlhttp' => true,
+			'.xml' => true,
+		);
+		call_integration_hook('integrate_skipped_actions', array(&$skipped_actions));
+		$skip_this = false;
+		if (isset($skipped_actions[$da_action]))
+		{
+			if (is_array($skipped_actions[$da_action]))
+			{
+				foreach ($skipped_actions[$da_action] as $subtype => $subnames)
+					$skip_this |= isset($_REQUEST[$subtype]) && in_array($_REQUEST[$subtype], $subnames);
+			}
+			else
+				$skip_this = isset($skipped_actions[$da_action]);
+		}
 	}
 
 	/**
@@ -53,35 +87,11 @@ class ShinyBear
 		$da_action = !empty($uri) ? !empty($context['current_action']) ? $context['current_action'] : '[' . $uri . ']' : '';
 		$da_action = !empty($init_action) ? $init_action : $da_action;
 
-		$skipped_actions = array(
-			'.xml',
-			'xmlhttp',
-			'dlattach',
-			'helpadmin',
-			'kesbalive',
-			'printpage',
-			'sbjs',
-			'jseditor',
-			'jsoption',
-			'jsmodify',
-			'jsoption',
-			'suggest',
-			'verificationcode',
-			'viewsmfile',
-			'viewquery',
-			'print',
-			'clock',
-			'about:unknown',
-			'about:mozilla',
-			'modifycat',
-		);
-		call_integration_hook('integrate_skipped_actions', array(&$skipped_actions));
-		$skip_this = in_array($da_action, $skipped_actions);
-		if ($skip_this)
+		if ($this->canSkipAction($da_action))
 			return;
 
 		// Add Forum to the linktree.
-		if (!empty($board) || !empty($topic) || $da_action == 'forum' || $da_action == 'collapse')
+		if (!empty($board) || !empty($topic) || $da_action == 'forum')
 			array_splice($context['linktree'], 1, 0, array(array(
 					'name' => $txt['forum'],
 					'url' => $scripturl . '?action=forum',
