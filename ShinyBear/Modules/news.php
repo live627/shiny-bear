@@ -123,14 +123,6 @@ class news extends Module
 			censorText($row['subject']);
 			censorText($row['body']);
 
-			$color_class = 'padding';
-			// Pinned topics should get a different color, too.
-			if (!empty($row['is_sticky']))
-				$color_class .= ' sticky';
-			// Locked topics get special treatment as well.
-			if (!empty($row['locked']))
-				$color_class .= ' locked';
-
 			// Build the array.
 			$posts[$row['id_msg']] = array(
 				'id' => $row['id_msg'],
@@ -144,7 +136,6 @@ class news extends Module
 				'poster' => !empty($row['id_member']) ? '<a href="' . $scripturl . '?action=profile;u=' . $row['id_member'] . '">' . $row['poster_name'] . '</a>' : $row['poster_name'],
 				'icon' => '<img src="' . $settings[$icon_sources[$row['icon']]] . '/post/' . $row['icon'] . '.png" class="icon" alt="' . $row['icon'] . '" />',
 				'can_reply' => !empty($row['locked']) ? $can_moderate : $can_reply_any || ($can_reply_own && $row['first_id_member'] == $user_info['id']),
-				'style' => $color_class,
 			);
 		}
 
@@ -180,7 +171,7 @@ class news extends Module
 								', $topic['subject'], '
 							</h4>
 						</div>
-						<div class="', $topic['style'], '">';
+						<div class="padding">';
 
 			echo '
 							<p class="smalltext">', $txt['posted_by'], ' ', $topic['poster'], ' | ', $topic['time'], '
