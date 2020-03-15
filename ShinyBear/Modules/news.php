@@ -128,31 +128,37 @@ class news extends Module
 
 		return $posts;
 	}
+	private $posts = array();
+
+	public function __construct(array $fields = null)
+	{
+		global $context, $scripturl;
+
+		parent::__construct($fields);
+
+		$board = empty($this->fields['board']) ? 1 : $this->fields['board'];
+		$limit = empty($this->fields['limit']) ? 5 : $this->fields['limit'];
+
+		$this->posts = $this->boardNews($board, $limit);
+	}
 
 	public function output()
 	{
 		global $context, $txt, $options, $scripturl;
 
-		$board = empty($this->fields['board']) ? 1 : $this->fields['board'];
-		$limit = empty($this->fields['limit']) ? 5 : $this->fields['limit'];
-
-		// Store the board news
-		$input = $this->boardNews($board, $limit);
-
-		// Default - Any content?
-		if (empty($input))
+		if (empty($this->posts))
 		{
 			echo $this->error('empty');
 			return;
 		}
 
-		foreach ($input as $topic)
+		foreach ($this->posts as $topic)
 		{
 			echo '
 						<div class="sub_bar">
 							<h4 class="subbg">
 								', $topic['icon'], '
-								', $topic['subject'], '
+								<a href="', $topic['href'], '">', $topic['subject'], '</a>
 							</h4>
 						</div>
 						<div class="padding">';

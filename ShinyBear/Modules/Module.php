@@ -8,9 +8,9 @@ namespace ShinyBear\Modules;
  */
 interface iModule
 {
-	public function __construct($field);
+	public function __construct(array $fields);
 
-	function output();
+	public function output();
 }
 
 abstract class Module implements iModule
@@ -23,9 +23,8 @@ abstract class Module implements iModule
 	 *
 	 * @param array $field
 	 * @access public
-	 * @return void
 	 */
-	public function __construct($fields = null)
+	public function __construct(array $fields = null)
 	{
 		$this->fields = $fields;
 	}
@@ -36,12 +35,12 @@ abstract class Module implements iModule
 	 * @access public
 	 * @return mixed The error string or false for no error.
 	 */
-	function getError()
+	public function getError()
 	{
 		return $this->err;
 	}
 
-	function error($type = 'error', $error_type = 'general', $log_error = false, $echo = true)
+	public function error($type = 'error', $error_type = 'general', $log_error = false)
 	{
 		global $txt;
 
@@ -54,8 +53,6 @@ abstract class Module implements iModule
 			'empty' => $type == 'empty' ? 1 : 0,
 			'error' => $type == 'error' ? 1 : 0,
 		);
-
-		//sb_call_hook('echo $this->error', array(&$type));
 
 		$error_string = !empty($valid_types[$type]) ? $txt['sb_module_' . $type] : $type;
 		$error_html = $error_type == 'critical' ? array('<p class="error">', '</p>') : array('', '');

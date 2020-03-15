@@ -166,12 +166,15 @@ class recent extends Module
 		krsort($posts);
 		return $posts;
 	}
+	private $posts = array();
 
-	public function output()
+	public function __construct(array $fields = null)
 	{
 		global $context, $scripturl;
 
-		$context['topics'] = $this->getTopics();
+		parent::__construct($fields);
+
+		$this->posts = $this->getTopics();
 
 		$context['mark_read_button'] = array(
 			'markread' => array(
@@ -181,12 +184,17 @@ class recent extends Module
 			),
 		);
 		call_integration_hook('integrate_mark_read_button');
+	}
+
+	public function output()
+	{
+		global $context, $scripturl;
 
 		echo '
 						<table class="w100 cp4 cs0 ba table_grid">';
 
-		if (!empty($context['topics']))
-			foreach ($context['topics'] as $post)
+		if (!empty($this->posts))
+			foreach ($this->posts as $post)
 			{
 				echo '
 							<tr>
@@ -217,7 +225,7 @@ class recent extends Module
 		echo '
 						</table>';
 
-		if ($context['user']['is_logged'] && !empty($context['topics']))
+		if ($context['user']['is_logged'] && !empty($this->posts))
 			template_button_strip($context['mark_read_button'], 'right');
 	}
 }
