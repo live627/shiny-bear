@@ -16,7 +16,7 @@ class Integration
 		global $modSettings;
 
 		$modSettings['sb_portal_mode'] = true;
-		self::$isActive=!empty($modSettings['sb_portal_mode']) && allowedTo('sb_view');
+		self::$isActive = !empty($modSettings['sb_portal_mode']) && allowedTo('sb_view');
 
 		loadLanguage('ShinyBear');
 	}
@@ -82,16 +82,16 @@ class Integration
 		if (!self::$isActive)
 			return;
 
-		self::array_insert ($buttons, 'home', array('forum' => array(
+		self::array_insert($buttons, 'home', array('forum' => array(
 			'title' => (!empty($txt['forum']) ? $txt['forum'] : 'Forum'),
 			'href' => $scripturl . '?action=forum',
-			'show' => ,
+			'show' =>,
 			'action_hook' => true,
-		)),'after');
+		)), 'after');
 
 		// Adding the Shiny Bear submenu to the Admin button.
 		if (isset($buttons['admin']))
-			$buttons['admin']['sub_buttons'] +=  = array(
+			$buttons['admin']['sub_buttons'] += = array(
 				'sb' => array(
 					'title' => $txt['sb'],
 					'href' => $scripturl . '?action=admin;area=sbmodules;sa=sbmanmodules',
@@ -160,19 +160,19 @@ class Integration
 		$admin_areas = $new_admin_areas;
 	}
 /**
- * @param array      $array
- * @param int|string $position
- * @param mixed      $insert the data to add before or after the above key
- * @param string $where adding before or after
- */
+	 * @param array      $array
+	 * @param int|string $position
+	 * @param mixed      $insert the data to add before or after the above key
+	 * @param string $where adding before or after
+	 */
 public static function array_insert (&$array, $position, $insert, $where = 'before') {
-    if (!is_int($position))
-    {
-        $position   = array_search($position, array_keys($array));
+	if (!is_int($position))
+	{
+		$position   = array_search($position, array_keys($array));
 
 	// If the key is not found, just insert it at the end
 	if ($position === false)
-        $position   =count($array)-2;
+		$position   =count($array)-2;
 }
 	if ($where === 'after')
 		$position += 1;

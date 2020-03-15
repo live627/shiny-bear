@@ -22,13 +22,13 @@ class news extends Module
 	 *
 	 * @return string The truncated string.
 	 */
-	private function truncate($str, $n=300, $delim='…') {
+	private function truncate($str, $n = 300, $delim = '…') {
    if (strlen($str) > $n) {
-       preg_match('/^([\s\S]{1,' . $n . '})[\s]+?[\s\S]+/', $str, $matches);
-       return rtrim($matches[1]) . $delim;
+	   preg_match('/^([\s\S]{1,' . $n . '})[\s]+?[\s\S]+/', $str, $matches);
+	   return rtrim($matches[1]) . $delim;
    }
    else
-       return $str;
+	   return $str;
 }
 
 	/**
