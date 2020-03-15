@@ -16,7 +16,6 @@ class Integration
 		global $modSettings;
 
 		$modSettings['sb_portal_mode'] = true;
-		self::$isActive = !empty($modSettings['sb_portal_mode']) && allowedTo('sb_view');
 
 		loadLanguage('ShinyBear');
 	}
@@ -192,6 +191,7 @@ public static function array_insert (&$array, $position, $insert, $where = 'befo
 		if (isset($_REQUEST['xml']))
 			return;
 
+		self::$isActive = !empty($modSettings['sb_portal_mode']) && allowedTo('sb_view');
 		if (($maintenance && !allowedTo('admin_forum')) || !self::$isActive)
 			return;
 
