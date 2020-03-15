@@ -16,37 +16,20 @@ class news extends Module
 	 *
 	 * @access private
 	 * @since 1.0
-	 * @param string $string The input string
+	 * @param string $str The text string to split
 	 * @param int $limit Maximum number of words to show. Default is 70.
 	 * $param string $rsb What to append if $string contains more words than specified by 4max. Default is three dots.
 	 *
 	 * @return string The truncated string.
 	 */
-	private function truncate($string, $limit = 70, $rsb = '...')
-	{
-		$words = preg_split('/(\s)+/', $string, $limit + 1, PREG_SPLIT_DELIM_CAPTURE);
-		$newstring = '';
-		$numwords = 0;
-
-		foreach ($words as $k => $word)
-			if (preg_match('/(\S)+/', $word))
-			{
-				if ($numwords < $limit)
-				{
-					$newstring .= $word;
-					if (isset($words[$k + 1]) && preg_match('/(\s)+/', $words[$k + 1]))
-					{
-						$newstring .= $words[$k + 1];
-						++$numwords;
-					}
-				}
-			}
-
-		if ($numwords >= $limit)
-			$newstring .= $rsb;
-
-		return $newstring;
-	}
+	private function truncate($str, $n=300, $delim='…') {
+   if (strlen($str) > $n) {
+       preg_match('/^([\s\S]{1,' . $n . '})[\s]+?[\s\S]+/', $str, $matches);
+       return rtrim($matches[1]) . $delim;
+   }
+   else
+       return $str;
+}
 
 	/**
 	 * Fetches topics from a board.
@@ -134,8 +117,7 @@ class news extends Module
 		$posts = array();
 		while ($row = $smcFunc['db_fetch_assoc']($request))
 		{
-			$row['body'] = $this->truncate(strip_tags(strtr(parse_bbc($row['body'], $row['smileys_enabled'], $row['id_msg']), array('<br />' => "\n"))), 10);
-			$row['body'] = parse_bbc($row['body'], $row['smileys_enabled'], $row['id_msg'] . '-prv');
+			$row['body'] = nl2br($this->truncate(strip_tags(strtr(parse_bbc($row['body'], $row['smileys_enabled'], $row['id_msg']), array('<br>' => "\n")))));
 
 			// Censor the subject.
 			censorText($row['subject']);
