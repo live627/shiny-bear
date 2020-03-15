@@ -95,9 +95,10 @@ class news extends Module
 		foreach ($stable_icons as $icon)
 			$icon_sources[$icon] = 'images_url';
 
-		$can_reply_own = allowedTo('post_reply_own');
-		$can_reply_any = allowedTo('post_reply_any');
-		$can_moderate = allowedTo('moderate_board');
+		$boards_can = boardsAllowedTo(array('post_reply_own', 'post_reply_any', 'moderate_board'), true, false);
+		$can_reply_own = $boards_can['post_reply_own'] === array(0) || in_array($boards_can['post_reply_own']);
+		$can_reply_any = $boards_can['post_reply_any'] === array(0) || in_array($boards_can['post_reply_any']);
+		$can_moderate = $boards_can['moderate_board'] === array(0) || in_array($boards_can['moderate_board']);
 
 		while ($row = $smcFunc['db_fetch_assoc']($request))
 		{
