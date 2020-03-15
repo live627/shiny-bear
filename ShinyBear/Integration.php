@@ -211,25 +211,38 @@ public static function array_insert (&$array, $position, $insert, $where = 'befo
 	/**
 	 * Global permissions used by this mod per user group
 	 *
-	 * There is only permissions to post new status and comments on any profile because people needs to be able to post in their own profiles by default te same goes for deleting, people are able to delete their own status/comments on their own profile page.
 	 * @param array $permissionGroups An array containing all possible permissions groups.
 	 * @param array $permissionList An associative array with all the possible permissions.
-	 * @return void
 	 */
 	public static function load_permissions(&$permissionGroups, &$permissionList, &$leftPermissionGroups, &$hiddenPermissions, &$relabelPermissions)
 	{
-		global $context;
+		global $modSettings;
 
 		loadLanguage('ShinyBearPermissions');
+			$permissionList['membergroup'] += array(
+				'sb_view' => array(false, 'sb', 'sb'),
+			);
+		if (empty($modSettings['sb_portal_mode']))
+			$hiddenPermissions[] = 'sb_view';
+	}
 
-		// If this is a guest limit the available permissions.
-		if (isset($context['group']['id']) && $context['group']['id'] == -1)
-			$permissionList['membergroup'] += array(
-				'sb_view' => array(false, 'sb', 'sb'),
-			);
-		else
-			$permissionList['membergroup'] += array(
-				'sb_view' => array(false, 'sb', 'sb'),
-			);
+	public static function load_permission_levels(&$groupLevels)
+	{
+		$groupLevels['global']['restrict'][] = 'sb_view';
+	}
+
+	public static function illegal_guest_permissions()
+	{
+		global $context;
+
+		$context['non_guest_permissions'][] = 'sb_view';
+	}
+
+	public static function reports_groupperm(&$disabled_permissions)
+	{
+		global $modSettings;
+
+		if (empty($modSettings['sb_portal_mode']))
+			$disabled_permissions[] = 'sb_view';
 	}
 }
