@@ -36,20 +36,12 @@ class recent extends Module
 	 *
 	 * @return array All the posts found.
 	 */
-	private function getTopics($num_recent = 8, $me = false, $ignore = true, $exclude_boards = null, $include_boards = null)
+	private function getTopics($num_recent = 8, $me = false, $ignore = true, array $exclude_boards = array(), array $include_boards = array())
 	{
 		global $context, $modSettings, $scripturl, $smcFunc, $user_info;
 
-		if ($exclude_boards === null && !empty($modSettings['recycle_enable']) && $modSettings['recycle_board'] > 0)
-			$exclude_boards = array($modSettings['recycle_board']);
-		else
-			$exclude_boards = empty($exclude_boards) ? array() : (is_array($exclude_boards) ? $exclude_boards : array($exclude_boards));
-
-		// Only some boards?.
-		if (is_array($include_boards) || (int) $include_boards === $include_boards)
-			$include_boards = is_array($include_boards) ? $include_boards : array($include_boards);
-		elseif ($include_boards != null)
-			$include_boards = array();
+		if (!empty($modSettings['recycle_enable']) && $modSettings['recycle_board'] > 0)
+			$exclude_boards[] = $modSettings['recycle_board'];
 
 		// Find all the posts in distinct topics. Newer ones will have higher IDs.
 		$request = $smcFunc['db_query']('', '
@@ -90,7 +82,7 @@ class recent extends Module
 		{
 			$request = $smcFunc['db_query']('', '
 				SELECT
-					m.id_topic, COUNT(*) AS co, COALESCE(lt.id_msg, lmr.id_msg, -1) + 1 AS new_from
+					m.id_topic, COUNT(*) AS co
 				FROM {db_prefix}messages AS m
 					LEFT JOIN {db_prefix}log_topics AS lt ON (lt.id_topic = m.id_topic AND lt.id_member = {int:current_member})
 					LEFT JOIN {db_prefix}log_mark_read AS lmr ON (lmr.id_board = m.id_board AND lmr.id_member = {int:current_member})
@@ -98,7 +90,7 @@ class recent extends Module
 					m.id_topic IN ({array_int:topic_list})
 					AND m.id_msg > COALESCE(lt.id_msg, lmr.id_msg, 0)
 					AND approved = 1
-				GROUP BY lt.id_msg, lmr.id_msg, m.id_topic',
+				GROUP BY m.id_topic',
 				array(
 					'current_member' => $user_info['id'],
 					'topic_list' => $topic_list
@@ -177,7 +169,7 @@ class recent extends Module
 
 	public function output()
 	{
-		global $context, $scripturl, $settings, $user_info;
+		global $context, $scripturl;
 
 		$context['topics'] = $this->getTopics();
 
@@ -204,7 +196,7 @@ class recent extends Module
 								<td class="w50">
 									', $post['board']['link'], ' &gt; ';
 
-				if (!$user_info['is_guest'] && !empty($post['co']))
+				if ($context['user']['is_logged'] && !empty($post['co']))
 					echo '<span class="new_posts">' . $post['co'] . '</span>';
 
 				echo '<a href="', $post['href'], '">', $post['subject'], '</a>
@@ -214,7 +206,7 @@ class recent extends Module
 								</td>
 							</tr>';
 			}
-			else
+		else
 			echo '
 							<tr class="windowbg2">
 								<td class="center">
@@ -225,7 +217,7 @@ class recent extends Module
 		echo '
 						</table>';
 
-		if (!empty($context['topics']))
+		if ($context['user']['is_logged'] && !empty($context['topics']))
 			template_button_strip($context['mark_read_button'], 'right');
 	}
 }
