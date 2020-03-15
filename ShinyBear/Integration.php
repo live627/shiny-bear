@@ -9,29 +9,14 @@ namespace ShinyBear;
 class Integration
 {
 	private static $sbHome = false;
-
-	public static function admin_ar44eas(&$admin_areas)
-	{
-		global $txt;
-		loadLanguage('ManageShinyBear');
-		$admin_areas['layout']['areas']['customforms'] = array(
-			'label' => $txt['custom_forms'],
-			'icon' => 'settings.gif',
-			'function' => function() { \ShinyBear\Controllers\Dispatcher::getInstance(); },
-			'subsections' => array(
-				'index' => array($txt['custom_forms_menu_index']),
-				'edit' => array($txt['custom_forms_menu_edit']),
-				'index2' => array($txt['custom_forms_menu_index2']),
-				'edit2' => array($txt['custom_forms_menu_edit2']),
-			),
-		);
-	}
+	private static $isActive = false;
 
 	public static function pre_load()
 	{
-		global $modSettings, $sourcedir;
+		global $modSettings;
 
 		$modSettings['sb_portal_mode'] = true;
+		self::$isActive=!empty($modSettings['sb_portal_mode']) && allowedTo('sb_view');
 
 		loadLanguage('ShinyBear');
 	}
@@ -64,9 +49,9 @@ class Integration
 	 */
 	public static function default_action()
 	{
-		global $context, $txt, $modSettings;
+		global $context, $sourcedir, $txt;
 
-		if (empty($modSettings['sb_portal_mode']) || !allowedTo('sb_view'))
+		if (!self::$isActive)
 		{
 			require_once($sourcedir . '/BoardIndex.php');
 
@@ -95,8 +80,8 @@ class Integration
 	{
 		global $txt, $context, $scripturl, $modSettings;
 
-		if (empty($modSettings['sb_portal_mode']) || !allowedTo('sb_view'))
-			return $buttons;
+		if (!self::$isActive)
+			return;
 
 		$new = array(
 			'title' => (!empty($txt['forum']) ? $txt['forum'] : 'Forum'),
@@ -165,20 +150,18 @@ class Integration
 	 */
 	public static function fixCurrentAction(&$current_action)
 	{
-		global $txt, $modSettings;
-
-		if (empty($modSettings['sb_portal_mode']) || !allowedTo('sb_view'))
+		if (!self::$isActive)
 			return;
 
 		if ($current_action == 'home' && empty(self::$sbHome))
 			$current_action = 'forum';
 	}
 
-	public static function admin_areas2($admin_areas)
+	public static function admin_areas2(&$admin_areas)
 	{
-		global $txt, $modSettings;
+		global $txt;
 
-		if (empty($modSettings['sb_portal_mode']) || !allowedTo('sb_view'))
+		if (!self::$isActive)
 			return $admin_areas;
 
 		$sb = array(
@@ -230,8 +213,7 @@ class Integration
 		if (isset($_REQUEST['xml']))
 			return;
 
-		// Is Shiny Bear disabled? Can you view it?
-		if ($modSettings['sb_portal_mode'] === false || !allowedTo('sb_view'))
+		if (($maintenance && !allowedTo('admin_forum')) || !self::$isActive)
 			return;
 
 		// Load the portal layer, making sure we didn't aleady add it.
