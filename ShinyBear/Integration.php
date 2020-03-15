@@ -85,13 +85,13 @@ class Integration
 		self::array_insert($buttons, 'home', array('forum' => array(
 			'title' => (!empty($txt['forum']) ? $txt['forum'] : 'Forum'),
 			'href' => $scripturl . '?action=forum',
-			'show' =>,
+			'show' => self::$isActive,
 			'action_hook' => true,
 		)), 'after');
 
 		// Adding the Shiny Bear submenu to the Admin button.
 		if (isset($buttons['admin']))
-			$buttons['admin']['sub_buttons'] += = array(
+			$buttons['admin']['sub_buttons'] += array(
 				'sb' => array(
 					'title' => $txt['sb'],
 					'href' => $scripturl . '?action=admin;area=sbmodules;sa=sbmanmodules',
