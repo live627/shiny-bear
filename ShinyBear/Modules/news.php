@@ -51,16 +51,16 @@ class news extends Module
 	 */
 	private function boardNews($board, $limit = 5)
 	{
-		global $scripturl, $settings, $smcFunc, $modSettings;
+		global $scripturl, $settings, $smcFunc, $modSettings, $user_info;
 
 		$request = $smcFunc['db_query']('', '
-			SELECT id_first_msg
+			SELECT id_topic
 			FROM {db_prefix}topics AS t
 			WHERE
 				id_board = {int:current_board}' . ($modSettings['postmod_active'] ? '
 				AND approved = {int:is_approved}' : '') . '
 				AND {query_see_topic_board}
-			ORDER BY id_first_msg DESC
+			ORDER BY id_topic DESC
 			LIMIT ' . $limit,
 			array(
 				'current_board' => $board,
@@ -69,8 +69,8 @@ class news extends Module
 		);
 
 		$posts = array();
-		while (list ($id_msg) = $smcFunc['db_fetch_row']($request))
-			$posts[$id_msg] = array();
+		while (list ($id_topic) = $smcFunc['db_fetch_row']($request))
+			$posts[$id_topic] = array();
 		$smcFunc['db_free_result']($request);
 
 		if (empty($posts))
@@ -84,7 +84,7 @@ class news extends Module
 			FROM {db_prefix}topics AS t
 				JOIN {db_prefix}messages AS m ON (m.id_msg = t.id_first_msg)
 				LEFT JOIN {db_prefix}members AS mem ON (mem.id_member = m.id_member)
-			WHERE t.id_first_msg IN ({array_int:post_list})',
+			WHERE t.id_topic IN ({array_int:post_list})',
 			array(
 				'post_list' => array_keys($posts),
 			)
@@ -109,12 +109,10 @@ class news extends Module
 			censorText($row['body']);
 
 			// Build the array.
-			$posts[$row['id_msg']] = array(
-				'id' => $row['id_msg'],
+			$posts[$row['id_topic']] = array(
 				'subject' => $row['subject'],
 				'replies' => $row['num_replies'],
 				'views' => $row['num_views'],
-				'short_subject' => shorten_subject($row['subject'], 25),
 				'preview' => $row['body'],
 				'time' => timeformat($row['poster_time']),
 				'href' => $scripturl . '?topic=' . $row['id_topic'] . '.0',
