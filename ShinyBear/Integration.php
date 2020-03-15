@@ -69,41 +69,29 @@ class Integration
 	 * Add our AJAX action to the list
 	 *
 	 * @param array &$no_stat_actions Array of all actions which may not be logged.
-	 * @return void
 	 */
 	public static function pre_log_stats(&$no_stat_actions)
 	{
-		$no_stat_actions[] = 'sbjs';
+		$no_stat_actions['sbjs'] = true;
 	}
 
 	public static function buttons(&$buttons)
 	{
-		global $txt, $context, $scripturl, $modSettings;
+		global $scripturl, $txt;
 
 		if (!self::$isActive)
 			return;
 
-		$new = array(
+		self::array_insert ($buttons, 'home', array('forum' => array(
 			'title' => (!empty($txt['forum']) ? $txt['forum'] : 'Forum'),
 			'href' => $scripturl . '?action=forum',
-			'show' => !empty($modSettings['sb_portal_mode']) && allowedTo('sb_view'),
+			'show' => ,
 			'action_hook' => true,
-		);
-
-		$new_buttons = array();
-		foreach ($buttons as $area => $info)
-		{
-			$new_buttons[$area] = $info;
-			if ($area == 'home')
-				$new_buttons['forum'] = $new;
-		}
-
-		$buttons = $new_buttons;
+		)),'after');
 
 		// Adding the Shiny Bear submenu to the Admin button.
 		if (isset($buttons['admin']))
-		{
-			$new = array(
+			$buttons['admin']['sub_buttons'] +=  = array(
 				'sb' => array(
 					'title' => $txt['sb'],
 					'href' => $scripturl . '?action=admin;area=sbmodules;sa=sbmanmodules',
@@ -111,35 +99,6 @@ class Integration
 					'is_last' => true,
 				),
 			);
-
-			$i = 0;
-			$new_subs = array();
-			$count = count($buttons['admin']['sub_buttons']);
-			foreach ($buttons['admin']['sub_buttons'] as $subs => $admin)
-			{
-				$i++;
-				$new_subs[$subs] = $admin;
-				if ($subs == 'permissions')
-				{
-					$permissions = true;
-					// Remove is_last if set.
-					if (isset($buttons['admin']['sub_buttons']['permissions']['is_last']))
-						unset($buttons['admin']['sub_buttons']['permissions']['is_last']);
-
-						$new_subs['sb'] = $new['sb'];
-
-					// set is_last to sb if it's the last.
-					if ($i != $count)
-						unset($new_subs['sb']['is_last']);
-				}
-			}
-
-			// If permissions doesn't exist for some reason, we'll put it at the end.
-			if (!isset($permissions))
-				$buttons['admin']['sub_buttons'] += $new;
-			else
-				$buttons['admin']['sub_buttons'] = $new_subs;
-		}
 	}
 
 	/**
@@ -200,6 +159,26 @@ class Integration
 
 		$admin_areas = $new_admin_areas;
 	}
+/**
+ * @param array      $array
+ * @param int|string $position
+ * @param mixed      $insert the data to add before or after the above key
+ * @param string $where adding before or after
+ */
+public static function array_insert (&$array, $position, $insert, $where = 'before') {
+    if (!is_int($position))
+    {
+        $position   = array_search($position, array_keys($array));
+
+	// If the key is not found, just insert it at the end
+	if ($position === false)
+        $position   =count($array)-2;
+}
+	if ($where === 'after')
+		$position += 1;
+  $first = array_splice ($array, 0, $position);
+  $array = array_merge ($first, $insert, $array);
+}
 
 	public static function load_theme()
 	{
