@@ -37,7 +37,7 @@ class news extends Module
 	 * This function is split into three basic queries:
 	 *
 	 * - Fetches the specified board. If the user cannot see or wants to ignore it, screw it.
-	 * - Gets the list of topiics. Returns an empty array if none are found.
+	 * - Gets the list of topics. Returns an empty array if none are found.
 	 * - And finally, the third query actually fetches the meat and bone of the first message in each topic.
 	 *
 	 * What is the use of all this without caching? We love cash! Especially greenbacks!
@@ -46,36 +46,21 @@ class news extends Module
 	 * @since 1.0
 	 * @param int $board The ID of the board to get. Required.
 	 * @param int $limit Maximum number of topics to show. Default is 5.
-	 * $param bool $ignore Whether or not to honor ignored boards. Default is false.
 	 *
 	 * @return array All the posts found.
 	 */
-	private function boardNews($board, $limit = 5, $ignore = false)
+	private function boardNews($board, $limit = 5)
 	{
 		global $scripturl, $settings, $smcFunc, $modSettings;
 
 		$request = $smcFunc['db_query']('', '
-			SELECT b.id_board
-			FROM {db_prefix}boards AS b
-			WHERE b.id_board = {int:current_board}
-				AND {query' . ($ignore ? '_wanna' : '') . '_see_board}
-			LIMIT 1',
-			array(
-				'current_board' => $board,
-			)
-		);
-
-		if ($smcFunc['db_num_rows']($request) == 0)
-			return array();
-
-		list ($board) = $smcFunc['db_fetch_row']($request);
-		$smcFunc['db_free_result']($request);
-
-		$request = $smcFunc['db_query']('', '
 			SELECT id_first_msg
-			FROM {db_prefix}topics
-			WHERE id_board = {int:current_board}' . ($modSettings['postmod_active'] ? '
+			FROM {db_prefix}topics AS t
+			WHERE
+				id_board = {int:current_board}' . ($modSettings['postmod_active'] ? '
 				AND approved = {int:is_approved}' : '') . '
+				AND {query_see_topic_board}
+			ORDER BY id_first_msg DESC
 			LIMIT ' . $limit,
 			array(
 				'current_board' => $board,
@@ -83,12 +68,12 @@ class news extends Module
 			)
 		);
 
-		$post_list = array();
+		$posts = array();
 		while (list ($id_msg) = $smcFunc['db_fetch_row']($request))
-			$post_list[] = $id_msg;
+			$posts[$id_msg] = array();
 		$smcFunc['db_free_result']($request);
 
-		if (empty($post_list))
+		if (empty($posts))
 			return array();
 
 		$request = $smcFunc['db_query']('', '
@@ -101,7 +86,7 @@ class news extends Module
 				LEFT JOIN {db_prefix}members AS mem ON (mem.id_member = m.id_member)
 			WHERE t.id_first_msg IN ({array_int:post_list})',
 			array(
-				'post_list' => $post_list,
+				'post_list' => array_keys($posts),
 			)
 		);
 
@@ -114,7 +99,6 @@ class news extends Module
 		$can_reply_any = allowedTo('post_reply_any');
 		$can_moderate = allowedTo('moderate_board');
 
-		$posts = array();
 		while ($row = $smcFunc['db_fetch_assoc']($request))
 		{
 			$row['body'] = nl2br($this->truncate(strip_tags(strtr(parse_bbc($row['body'], $row['smileys_enabled'], $row['id_msg']), array('<br>' => "\n")))));
@@ -141,7 +125,6 @@ class news extends Module
 
 		$smcFunc['db_free_result']($request);
 
-		krsort($posts);
 		return $posts;
 	}
 
