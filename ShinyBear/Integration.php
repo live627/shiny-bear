@@ -197,13 +197,7 @@ public static function array_insert (&$array, $position, $insert, $where = 'befo
 
 		// Load the portal layer, making sure we didn't aleady add it.
 		if (!empty($context['template_layers']) && !in_array('portal', $context['template_layers']))
-		{
-			// Checks if the forum is in maintenance, and if the portal is disabled.
-			if (($maintenance && !allowedTo('admin_forum')) || empty($modSettings['sb_portal_mode']) || !allowedTo('sb_view'))
-				$context['template_layers'] = array('html', 'body');
-			else
-				$context['template_layers'][] = 'portal';
-		}
+			$context['template_layers'][] = 'portal';
 
 		loadLanguage('ShinyBear');
 		loadTemplate('ShinyBear');
