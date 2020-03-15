@@ -15,17 +15,6 @@ namespace ShinyBear;
 class ShinyBear
 {
 	/**
-	 * Initialize front page.
-	 */
-	public function init()
-	{
-		global $context, $txt;
-
-		$context['sub_template'] = 'portal';
-		$context['page_title'] = $context['forum_name'] . ' - ' . $txt['home'];
-	}
-
-	/**
 	 * @return bool whether this is an attachment, avatar, toggle of editor buttons, theme option, XML feed, popup, etc.
 	 */
 	private function canSkipAction($da_action)
@@ -63,18 +52,30 @@ class ShinyBear
 			else
 				$skip_this = isset($skipped_actions[$da_action]);
 		}
+
+		return $skip_this;
+	}
+
+	/**
+	 * Add Forum to the linktree.
+	 */
+	public function addForumLinktree()
+	{
+		global $context, $board, $topic, $scripturl, $txt;
+
+		if (!empty($board) || !empty($topic) || $context['current_action'] == 'forum')
+			array_splice($context['linktree'], 1, 0, array(array(
+					'name' => $txt['forum'],
+					'url' => $scripturl . '?action=forum',
+				)));
 	}
 
 	/**
 	 * Start to load the portal.
-	 *
-	 * @return void
 	 */
 	public function load($init_action = '')
 	{
-		global $context, $txt, $board, $topic, $scripturl, $boarddir, $boardurl, $sourcedir, $modSettings, $user_info;
-
-		loadLanguage('ShinyBearModules');
+		global $context, $boarddir, $boardurl;
 
 		// These puppies are evil >:D
 		unset($_GET['PHPSESSID'], $_GET['theme']);
@@ -90,12 +91,7 @@ class ShinyBear
 		if ($this->canSkipAction($da_action))
 			return;
 
-		// Add Forum to the linktree.
-		if (!empty($board) || !empty($topic) || $da_action == 'forum')
-			array_splice($context['linktree'], 1, 0, array(array(
-					'name' => $txt['forum'],
-					'url' => $scripturl . '?action=forum',
-				)));
+		$this->addForumLinktree();
 
 		$context['sb_icon_url'] = $boardurl . '/sb_extra/module_icons/';
 		$context['sb_module_image_url'] = $boardurl . '/sb_extra/module_images/';
