@@ -46,7 +46,7 @@ class recent extends Module
 		// Find all the posts in distinct topics. Newer ones will have higher IDs.
 		$request = $smcFunc['db_query']('', '
 			SELECT
-				t.id_topic, b.id_board, b.name AS board_name
+				t.id_topic, b.id_board, b.name
 			FROM {db_prefix}topics AS t
 				JOIN {db_prefix}messages AS ml ON (ml.id_msg = t.id_last_msg)
 				LEFT JOIN {db_prefix}boards AS b ON (b.id_board = t.id_board)
@@ -58,6 +58,7 @@ class recent extends Module
 				AND ml.approved = {int:is_approved}' : '') . ($me ? '
 				AND t.id_member_started = {int:current_member}' : '') . '
 				AND t.id_topic != 1
+			ORDER BY id_topic DESC
 			LIMIT ' . $num_recent,
 			array(
 				'include_boards' => empty($include_boards) ? '' : $include_boards,
@@ -67,22 +68,25 @@ class recent extends Module
 				'current_member' => $user_info['id'],
 			)
 		);
-		$topics = array();
-		while ($row = $smcFunc['db_fetch_assoc']($request))
-			$topics[$row['id_topic']] = $row;
+		$posts = array();
+		while (list ($id_topic, $id_board, $name) = $smcFunc['db_fetch_row']($request))
+			$posts[$id_topic] = array(
+				'board_link' => '<a href="' . $scripturl . '?board=' . $id_board . '.0">' . $name . '</a>',
+				'topic' => $id_topic,
+				'co' => 0,
+			);
 		$smcFunc['db_free_result']($request);
 
-		// Did we find anything? If not, bail.
-		if (empty($topics))
+		if (empty($posts))
 			return array();
-		$topic_list = array_keys($topics);
+		$topic_list = array_keys($posts);
 
 		// Count number of new posts per topic.
 		if (!$user_info['is_guest'])
 		{
 			$request = $smcFunc['db_query']('', '
 				SELECT
-					m.id_topic, COUNT(*) AS co
+					m.id_topic, COUNT(*)
 				FROM {db_prefix}messages AS m
 					LEFT JOIN {db_prefix}log_topics AS lt ON (lt.id_topic = m.id_topic AND lt.id_member = {int:current_member})
 					LEFT JOIN {db_prefix}log_mark_read AS lmr ON (lmr.id_board = m.id_board AND lmr.id_member = {int:current_member})
@@ -96,8 +100,8 @@ class recent extends Module
 					'topic_list' => $topic_list
 				)
 			);
-			while ($row = $smcFunc['db_fetch_assoc']($request))
-				$topics[$row['id_topic']] += $row;
+			while (list ($id_topic, $co) = $smcFunc['db_fetch_row']($request))
+				$posts[$id_topic]['co'] = $co;
 			$smcFunc['db_free_result']($request);
 		}
 
@@ -116,7 +120,6 @@ class recent extends Module
 			)
 		);
 
-		$posts = array();
 		while ($row = $smcFunc['db_fetch_assoc']($request))
 		{
 			censorText($row['subject']);
@@ -143,27 +146,18 @@ class recent extends Module
 			}
 
 			// Build the array.
-			$posts[$row['id_msg']] = array(
-				'board' => array(
-					'link' => '<a href="' . $scripturl . '?board=' . $topics[$row['id_topic']]['id_board'] . '.0">' . $topics[$row['id_topic']]['board_name'] . '</a>',
-				),
-				'topic' => $row['id_topic'],
-				'poster' => array(
-					'link' => empty($row['id_member']) ? $row['poster_name'] : '<a href="' . $scripturl . '?action=profile;u=' . $row['id_member'] . '">' . $row['poster_name'] . '</a>'
-				),
+			$posts[$row['id_topic']] += array(
+				'poster_link' => empty($row['id_member']) ? $row['poster_name'] : '<a href="' . $scripturl . '?action=profile;u=' . $row['id_member'] . '">' . $row['poster_name'] . '</a>',
 				'subject' => $row['subject'],
 				'replies' => $row['num_replies'],
 				'views' => $row['num_views'],
-				'short_subject' => shorten_subject($row['subject'], 25),
 				'preview' => $row['body'],
 				'time' => timeformat($row['poster_time'], '%a, ' . $time_fmt),
 				'href' => $scripturl . '?topic=' . $row['id_topic'] . '.msg' . $row['id_msg'] . ';topicseen#new',
-				'co' => isset($topics[$row['id_topic']]['co']) ? $topics[$row['id_topic']]['co'] : 0,
 			);
 		}
 		$smcFunc['db_free_result']($request);
 
-		krsort($posts);
 		return $posts;
 	}
 	private $posts = array();
@@ -199,10 +193,10 @@ class recent extends Module
 				echo '
 							<tr>
 								<td class="w25">
-									', $post['poster']['link'], '
+									', $post['poster_link'], '
 								</td>
 								<td class="w50">
-									', $post['board']['link'], ' &gt; ';
+									', $post['board_link'], ' &gt; ';
 
 				if ($context['user']['is_logged'] && !empty($post['co']))
 					echo '<span class="new_posts">' . $post['co'] . '</span>';
