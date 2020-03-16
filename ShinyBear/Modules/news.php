@@ -22,8 +22,10 @@ class news extends Module
 	 *
 	 * @return string The truncated string.
 	 */
-	private function truncate($str, $n = 300, $delim = '…') {
-   if (strlen($str) > $n) {
+	private function truncate($str, $n = 300, $delim = '…')
+	{
+   if (strlen($str) > $n)
+   {
 	   preg_match('/^([\s\S]{1,' . $n . '})[\s]+?[\s\S]+/', $str, $matches);
 	   return rtrim($matches[1]) . $delim;
    }

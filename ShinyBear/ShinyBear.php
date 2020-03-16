@@ -444,7 +444,8 @@ class ShinyBear
 				'stat_choices' => array(
 					'type' => 'callback',
 					'callback_func' => 'checklist',
-					'preload' => function($field) {
+					'preload' => function($field)
+					{
 						$field['options'] = sb_list_checks($field['value'], array('members', 'posts', 'topics', 'categories', 'boards', 'ontoday', 'onever'), array(), $field['label'], 0);
 
 						return $field; },
@@ -470,7 +471,8 @@ class ShinyBear
 				'show_online' => array(
 					'type' => 'callback',
 					'callback_func' => 'checklist',
-					'preload' => function($field) {
+					'preload' => function($field)
+					{
 						$field['options'] = sb_list_checks($field['value'], array('users', 'buddies', 'guests', 'hidden', 'spiders'), array(), $field['label'], 0);
 
 						return $field; },
@@ -480,7 +482,8 @@ class ShinyBear
 				'online_groups' => array(
 					'type' => 'callback',
 					'callback_func' => 'list_groups',
-					'preload' => function($field) {
+					'preload' => function($field)
+					{
 						$field['options'] = sb_list_groups($field['value'], '-1,0,3');
 
 						return $field; },
@@ -496,7 +499,8 @@ class ShinyBear
 				),
 				'board' => array(
 					'type' => 'select',
-					'preload' => function($field) {
+					'preload' => function($field)
+					{
 						$field['options'] = sb_list_boards();
 
 						return $field; },
@@ -570,7 +574,8 @@ class ShinyBear
 				'show_options' => array(
 					'type' => 'callback',
 					'callback_func' => 'checklist',
-					'preload' => function($field) {
+					'preload' => function($field)
+					{
 						$field['options'] = sb_list_checks($field['value'], array('events', 'holidays', 'birthdays'), array(), $field['label'], 0);
 
 						return $field; },

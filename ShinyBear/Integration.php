@@ -164,19 +164,19 @@ class Integration
 	 * @param mixed      $insert the data to add before or after the above key
 	 * @param string $where adding before or after
 	 */
-public static function array_insert (&$array, $position, $insert, $where = 'before') {
+public static function array_insert(&$array, $position, $insert, $where = 'before') {
 	if (!is_int($position))
 	{
-		$position   = array_search($position, array_keys($array));
+		$position = array_search($position, array_keys($array));
 
 	// If the key is not found, just insert it at the end
 	if ($position === false)
-		$position   =count($array)-2;
+		$position = count($array) - 2;
 }
 	if ($where === 'after')
 		$position += 1;
-  $first = array_splice ($array, 0, $position);
-  $array = array_merge ($first, $insert, $array);
+  $first = array_splice($array, 0, $position);
+  $array = array_merge($first, $insert, $array);
 }
 
 	public static function load_theme()
