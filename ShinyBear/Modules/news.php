@@ -97,11 +97,6 @@ class news extends Module
 			)
 		);
 
-		$stable_icons = array('xx', 'thumbup', 'thumbdown', 'exclamation', 'question', 'lamp', 'smiley', 'angry', 'cheesy', 'grin', 'sad', 'wink', 'poll', 'moved', 'recycled', 'wireless');
-		$icon_sources = array();
-		foreach ($stable_icons as $icon)
-			$icon_sources[$icon] = 'images_url';
-
 		$boards_can = boardsAllowedTo(array('post_reply_own', 'post_reply_any', 'moderate_board'), true, false);
 		$can_reply_own = $boards_can['post_reply_own'] === array(0) || in_array($boards_can['post_reply_own']);
 		$can_reply_any = $boards_can['post_reply_any'] === array(0) || in_array($boards_can['post_reply_any']);
@@ -110,6 +105,7 @@ class news extends Module
 		$posts = array();
 		while ($row = $smcFunc['db_fetch_assoc']($request))
 		{
+			$this->findMessageIcons($row['icon']);
 			$row['body'] = nl2br($this->truncate(strip_tags(strtr(parse_bbc($row['body'], $row['smileys_enabled'], $row['id_msg']), array('<br>' => "\n")))));
 
 			// Censor the subject.
@@ -125,8 +121,11 @@ class news extends Module
 				'time' => timeformat($row['poster_time']),
 				'href' => $scripturl . '?topic=' . $row['id_topic'] . '.0',
 				'poster' => !empty($row['id_member']) ? '<a href="' . $scripturl . '?action=profile;u=' . $row['id_member'] . '">' . $row['poster_name'] . '</a>' : $row['poster_name'],
-				'icon' => '<img src="' . $settings[$icon_sources[$row['icon']]] . '/post/' . $row['icon'] . '.png" class="icon" alt="' . $row['icon'] . '" />',
-				'can_reply' => !empty($row['locked']) ? $can_moderate : $can_reply_any || ($can_reply_own && $row['first_id_member'] == $user_info['id']),
+				'icon' => sprintf(
+					'<img src="%s/post/%s.png" class="icon" alt="%2$s" />',
+					$settings[$context['icon_sources'][$row['icon']]],
+					$row['icon']
+				),
 			);
 		}
 
@@ -134,6 +133,22 @@ class news extends Module
 
 		return $posts;
 	}
+
+	private function findMessageIcons($icon)
+	{
+		global $context, $settings;
+
+		if (empty($context['icon_sources']))
+		{
+			$context['icon_sources'] = array();
+			foreach ($context['stable_icons'] as $stable_icon)
+				$context['icon_sources'][$stable_icon] = 'images_url';
+		}
+
+		if (!isset($context['icon_sources'][$icon]))
+			$context['icon_sources'][$icon] = file_exists($settings['theme_dir'] . '/images/post/' . $icon . '.png') ? 'images_url' : 'default_images_url';
+	}
+
 	private $posts = array();
 
 	public function __construct(array $fields = null)
