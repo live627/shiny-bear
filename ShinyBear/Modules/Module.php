@@ -46,12 +46,12 @@ abstract class Module implements iModule
 
 		// All possible pre-defined types.
 		$valid_types = array(
-			'mod_not_installed' => $type == 'mod_not_installed' ? 1 : 0,
-			'not_allowed' => $type == 'not_allowed' ? 1 : 0,
-			'no_language' => $type == 'no_language' ? 1 : 0,
-			'query_error' => $type == 'query_error' ? 1 : 0,
-			'empty' => $type == 'empty' ? 1 : 0,
-			'error' => $type == 'error' ? 1 : 0,
+			'mod_not_installed' => $type == 'mod_not_installed',
+			'not_allowed' => $type == 'not_allowed',
+			'no_language' => $type == 'no_language',
+			'query_error' => $type == 'query_error',
+			'empty' => $type == 'empty',
+			'error' => $type == 'error',
 		);
 
 		$error_string = !empty($valid_types[$type]) ? $txt['sb_module_' . $type] : $type;
