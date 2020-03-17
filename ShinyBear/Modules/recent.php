@@ -187,7 +187,7 @@ class recent extends Module
 		{
 			$topic_list = array_keys($this->topics);
 			$this->unreadPostCount = $this->getUnreadPostCount($topic_list);
-			$this->posts = $this->getPosts();
+			$this->posts = $this->getPosts($topic_list);
 		}
 		$context['mark_read_button'] = array(
 			'markread' => array(

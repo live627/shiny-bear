@@ -147,9 +147,7 @@ class news extends Module
 
 		$topic_list = $this->getTopics($board, $limit);
 		if (!empty($topic_list))
-		{
-			$this->posts = $this->getPosts();
-		}
+			$this->posts = $this->getPosts($topic_list);
 	}
 
 	public function output()
