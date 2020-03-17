@@ -34,26 +34,18 @@ class news extends Module
 }
 
 	/**
-	 * Fetches topics from a board.
-	 *
-	 * This function is split into three basic queries:
-	 *
-	 * - Fetches the specified board. If the user cannot see or wants to ignore it, screw it.
-	 * - Gets the list of topics. Returns an empty array if none are found.
-	 * - And finally, the third query actually fetches the meat and bone of the first message in each topic.
-	 *
-	 * What is the use of all this without caching? We love cash! Especially greenbacks!
+	 * Fetches topics from a board. Returns an empty array if none are found.
 	 *
 	 * @access private
 	 * @since 1.0
 	 * @param int $board The ID of the board to get. Required.
 	 * @param int $limit Maximum number of topics to show. Default is 5.
 	 *
-	 * @return array All the posts found.
+	 * @return array
 	 */
-	private function boardNews($board, $limit = 5)
+	private function getTopics($board, $limit = 5)
 	{
-		global $scripturl, $settings, $smcFunc, $modSettings, $user_info;
+		global $smcFunc, $modSettings;
 
 		$request = $smcFunc['db_query']('', '
 			SELECT id_topic
@@ -72,11 +64,24 @@ class news extends Module
 
 		$posts = array();
 		while (list ($id_topic) = $smcFunc['db_fetch_row']($request))
-			$posts[$id_topic] = array();
+			$posts[] = $id_topic;
 		$smcFunc['db_free_result']($request);
 
-		if (empty($posts))
-			return array();
+		return $posts;
+	}
+
+	/**
+	 * Fetches the meat and bone of the first message in each topic.
+	 *
+	 * @access private
+	 * @since 1.0
+	 * @param array $topic_list
+	 *
+	 * @return array
+	 */
+	private function getPosts(array $topic_list)
+	{
+		global $scripturl, $settings, $smcFunc, $user_info;
 
 		$request = $smcFunc['db_query']('', '
 			SELECT
@@ -86,9 +91,9 @@ class news extends Module
 			FROM {db_prefix}topics AS t
 				JOIN {db_prefix}messages AS m ON (m.id_msg = t.id_first_msg)
 				LEFT JOIN {db_prefix}members AS mem ON (mem.id_member = m.id_member)
-			WHERE t.id_topic IN ({array_int:post_list})',
+			WHERE t.id_topic IN ({array_int:topic_list})',
 			array(
-				'post_list' => array_keys($posts),
+				'topic_list' => $topic_list,
 			)
 		);
 
@@ -102,6 +107,7 @@ class news extends Module
 		$can_reply_any = $boards_can['post_reply_any'] === array(0) || in_array($boards_can['post_reply_any']);
 		$can_moderate = $boards_can['moderate_board'] === array(0) || in_array($boards_can['moderate_board']);
 
+		$posts = array();
 		while ($row = $smcFunc['db_fetch_assoc']($request))
 		{
 			$row['body'] = nl2br($this->truncate(strip_tags(strtr(parse_bbc($row['body'], $row['smileys_enabled'], $row['id_msg']), array('<br>' => "\n")))));
@@ -139,7 +145,11 @@ class news extends Module
 		$board = empty($this->fields['board']) ? 1 : $this->fields['board'];
 		$limit = empty($this->fields['limit']) ? 5 : $this->fields['limit'];
 
-		$this->posts = $this->boardNews($board, $limit);
+		$topic_list = $this->getTopics($board, $limit);
+		if (!empty($topic_list))
+		{
+			$this->posts = $this->getPosts();
+		}
 	}
 
 	public function output()

@@ -9,22 +9,8 @@ namespace ShinyBear\Modules;
 class recent extends Module
 {
 	/**
-	 * Fetches recent topics.
-	 *
-	 * This function is split into three basic queries:
-	 *
-	 * - Fetches the topics and their respective boards, ignoring those the
+	 * Fetches the topics and their respective boards, ignoring those that the
 	 * user cannot see or wants to ignore. Returns an empty array if none are found.
-	 * - If the logged user is not a guest, count the number of new posts per topic.
-	 * - And finally, the third query actually fetches the meat and bone of the first message in each topic.
-	 *
-	 * Several major diifferences set this function apart from ssi_recentTopics():
-	 *
-	 * - The huge, scary, hulking query is split in two. Shaves time off here. Went
-	 * from evaluating potentially (many) many null rows at a Cartesian product
-	 * level, down to a known subset. Immediate savings.
-	 * - Unread count for members.
-	 * - Cache. Can never get enough.
 	 *
 	 * @access private
 	 * @since 1.0
@@ -34,7 +20,7 @@ class recent extends Module
 	 * @param array $exclude_boards Boards to exclude as array values. Default is null.
 	 * @param array $include_boards Boards to include as array values. Do note that, if specifiied, posts coming only from these boards will be counted. Default is null.
 	 *
-	 * @return array All the posts found.
+	 * @return array
 	 */
 	private function getTopics($num_recent = 8, $me = false, $ignore = true, array $exclude_boards = array(), array $include_boards = array())
 	{
@@ -61,8 +47,8 @@ class recent extends Module
 			ORDER BY id_topic DESC
 			LIMIT ' . $num_recent,
 			array(
-				'include_boards' => empty($include_boards) ? '' : $include_boards,
-				'exclude_boards' => empty($exclude_boards) ? '' : $exclude_boards,
+				'include_boards' => $include_boards,
+				'exclude_boards' => $exclude_boards,
 				'min_message_id' => $modSettings['maxMsgID'] - 35 * min($num_recent, 5),
 				'is_approved' => 1,
 				'current_member' => $user_info['id'],
@@ -70,18 +56,27 @@ class recent extends Module
 		);
 		$posts = array();
 		while (list ($id_topic, $id_board, $name) = $smcFunc['db_fetch_row']($request))
-			$posts[$id_topic] = array(
-				'board_link' => '<a href="' . $scripturl . '?board=' . $id_board . '.0">' . $name . '</a>',
-				'topic' => $id_topic,
-				'co' => 0,
-			);
+			$posts[$id_topic] = '<a href="' . $scripturl . '?board=' . $id_board . '.0">' . $name . '</a>';
 		$smcFunc['db_free_result']($request);
 
-		if (empty($posts))
-			return array();
-		$topic_list = array_keys($posts);
+		return $posts;
+	}
+
+	/**
+	 * If the logged user is not a guest, count the number of new posts per topic.
+	 *
+	 * @access private
+	 * @since 1.0
+	 * @param array $topic_list
+	 *
+	 * @return array
+	 */
+	private function getUnreadPostCount(array $topic_list)
+	{
+		global $smcFunc, $user_info;
 
 		// Count number of new posts per topic.
+		$posts = array();
 		if (!$user_info['is_guest'])
 		{
 			$request = $smcFunc['db_query']('', '
@@ -101,9 +96,25 @@ class recent extends Module
 				)
 			);
 			while (list ($id_topic, $co) = $smcFunc['db_fetch_row']($request))
-				$posts[$id_topic]['co'] = $co;
+				$posts[$id_topic] = $co;
 			$smcFunc['db_free_result']($request);
 		}
+
+		return $posts;
+	}
+
+	/**
+	 * Fetches the meat and bone of the first message in each topic.
+	 *
+	 * @access private
+	 * @since 1.0
+	 * @param array $topic_list
+	 *
+	 * @return array
+	 */
+	private function getPosts(array $topic_list)
+	{
+		global $scripturl, $smcFunc, $user_info;
 
 		$request = $smcFunc['db_query']('', '
 			SELECT
@@ -120,6 +131,7 @@ class recent extends Module
 			)
 		);
 
+		$posts = array();
 		while ($row = $smcFunc['db_fetch_assoc']($request))
 		{
 			censorText($row['subject']);
@@ -146,7 +158,7 @@ class recent extends Module
 			}
 
 			// Build the array.
-			$posts[$row['id_topic']] += array(
+			$posts[$row['id_topic']] = array(
 				'poster_link' => empty($row['id_member']) ? $row['poster_name'] : '<a href="' . $scripturl . '?action=profile;u=' . $row['id_member'] . '">' . $row['poster_name'] . '</a>',
 				'subject' => $row['subject'],
 				'replies' => $row['num_replies'],
@@ -160,6 +172,8 @@ class recent extends Module
 
 		return $posts;
 	}
+	private $topics = array();
+	private $unreadPostCount = array();
 	private $posts = array();
 
 	public function __construct(array $fields = null)
@@ -168,8 +182,13 @@ class recent extends Module
 
 		parent::__construct($fields);
 
-		$this->posts = $this->getTopics();
-
+		$this->topics = $this->getTopics();
+		if (!empty($this->topics))
+		{
+			$topic_list = array_keys($this->topics);
+			$this->unreadPostCount = $this->getUnreadPostCount($topic_list);
+			$this->posts = $this->getPosts();
+		}
 		$context['mark_read_button'] = array(
 			'markread' => array(
 				'text' => 'mark_as_read',
@@ -182,13 +201,20 @@ class recent extends Module
 
 	public function output()
 	{
-		global $context, $scripturl;
+		global $context, $txt;
 
 		echo '
 						<table class="w100 cp4 cs0 ba table_grid">';
 
-		if (!empty($this->posts))
-			foreach ($this->posts as $post)
+		if (empty($this->posts))
+			echo '
+							<tr>
+								<td class="centertext">
+									',  $txt['no_messages'], '
+								</td>
+							</tr>';
+		else
+			foreach ($this->posts as $id_topic => $post)
 			{
 				echo '
 							<tr>
@@ -196,10 +222,10 @@ class recent extends Module
 									', $post['poster_link'], '
 								</td>
 								<td class="w50">
-									', $post['board_link'], ' &gt; ';
+									', $this->topics[$id_topic], ' &gt; ';
 
-				if ($context['user']['is_logged'] && !empty($post['co']))
-					echo '<span class="new_posts">' . $post['co'] . '</span>';
+				if ($context['user']['is_logged'] && !empty($this->unreadPostCount[$id_topic]))
+					echo '<span class="new_posts">' . $this->unreadPostCount[$id_topic] . '</span>';
 
 				echo '<a href="', $post['href'], '">', $post['subject'], '</a>
 								</td>
@@ -208,13 +234,6 @@ class recent extends Module
 								</td>
 							</tr>';
 			}
-		else
-			echo '
-							<tr class="windowbg2">
-								<td class="center">
-									No messages...
-								</td>
-							</tr>';
 
 		echo '
 						</table>';
