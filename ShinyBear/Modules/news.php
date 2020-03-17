@@ -81,7 +81,7 @@ class news extends Module
 	 */
 	private function getPosts(array $topic_list)
 	{
-		global $scripturl, $settings, $smcFunc, $user_info;
+		global $context, $scripturl, $settings, $smcFunc;
 
 		$request = $smcFunc['db_query']('', '
 			SELECT
@@ -96,11 +96,6 @@ class news extends Module
 				'topic_list' => $topic_list,
 			)
 		);
-
-		$boards_can = boardsAllowedTo(array('post_reply_own', 'post_reply_any', 'moderate_board'), true, false);
-		$can_reply_own = $boards_can['post_reply_own'] === array(0) || in_array($boards_can['post_reply_own']);
-		$can_reply_any = $boards_can['post_reply_any'] === array(0) || in_array($boards_can['post_reply_any']);
-		$can_moderate = $boards_can['moderate_board'] === array(0) || in_array($boards_can['moderate_board']);
 
 		$posts = array();
 		while ($row = $smcFunc['db_fetch_assoc']($request))
@@ -126,12 +121,30 @@ class news extends Module
 					$settings[$context['icon_sources'][$row['icon']]],
 					$row['icon']
 				),
+				'can_reply' => $this->canReply(!empty($row['locked']), $row['id_member']),
 			);
 		}
 
 		$smcFunc['db_free_result']($request);
 
 		return $posts;
+	}
+
+	private function canReply($locked, $memID)
+	{
+		global $user_info;
+		static $boards_can = array();
+
+		$board = empty($this->fields['board']) ? 1 : $this->fields['board'];
+
+		if (empty($boards_can))
+			$boards_can = boardsAllowedTo(array('post_reply_own', 'post_reply_any', 'moderate_board'), true, false);
+
+		$can_reply_own = $boards_can['post_reply_own'] === array(0) || in_array($board, $boards_can['post_reply_own']);
+		$can_reply_any = $boards_can['post_reply_any'] === array(0) || in_array($board, $boards_can['post_reply_any']);
+		$can_moderate = $boards_can['moderate_board'] === array(0) || in_array($board, $boards_can['moderate_board']);
+
+		return $locked ? $can_moderate : $can_reply_any || ($can_reply_own && $memID == $user_info['id']);
 	}
 
 	private function findMessageIcons($icon)
