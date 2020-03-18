@@ -332,12 +332,10 @@ class ShinyBear
 
 		if (isset($fields['module_link']))
 		{
-			$http = stristr($fields['module_link']['value'], 'http://') !== false || stristr($fields['module_link']['value'], 'www.') !== false;
+			if (empty(parse_url($fields['module_link']['value'], PHP_URL_SCHEME)))
+				$fields['module_link']['value'] = $scripturl . '?' . $fields['module_link']['value'];
 
-			if ($http)
-				$data['module_title'] = '<a href="' . $fields['module_link']['value'] . '" target="' . $data['module_target'] . '">' . $data['module_title'] . '</a>';
-			else
-				$data['module_title'] = '<a href="' . $scripturl . '?' . $fields['module_link']['value'] . '" target="' . $data['module_target'] . '">' . $data['module_title'] . '</a>';
+			$data['module_title'] = '<a href="' . $fields['module_link']['value'] . '" target="' . $data['module_target'] . '">' . $data['module_title'] . '</a>';
 		}
 
 		if (!empty($fields))
