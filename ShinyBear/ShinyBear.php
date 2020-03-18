@@ -473,10 +473,10 @@ class ShinyBear
 					'callback_func' => 'checklist',
 					'preload' => function($field)
 					{
-						$field['options'] = sb_list_checks($field['value'], array('users', 'buddies', 'guests', 'hidden', 'spiders'), array(), $field['label'], 0);
+						$field['options'] = sb_list_checks($field['value'], array('guests', 'spiders', 'buddies', 'hidden'), array(), $field['label'], 0);
 
 						return $field; },
-					'value' => '0,1,2',
+					'value' => '0,1,3',
 					'order' => true,
 				),
 				'online_groups' => array(
