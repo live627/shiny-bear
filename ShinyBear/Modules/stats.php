@@ -8,36 +8,24 @@ namespace ShinyBear\Modules;
  */
 class stats extends Module
 {
-	public function output()
+	public function getTotals()
 	{
-	global $txt, $smcFunc, $scripturl, $settings, $modSettings, $context;
+		global $modSettings, $scripturl, $smcFunc;
 
-	// Grab the params, if they exist.
-	if (is_array($this->fields))
-	{
-		if (empty($this->fields['stat_choices']))
+		$kittens = 0;
+		$planks = 0;
+
+		if (isset($this->stat_choices[3]))
 		{
-			echo $this->error();
-			return;
-		}
-		else
-			$stat_choices = explode(',', $this->fields['stat_choices']);
-
-		$totals = array();
-
-		if (isset($stat_choices[3]))
-		{
-			// How many cats? Er... categories. Not cats...xD
 			$request = $smcFunc['db_query']('', '
 				SELECT COUNT(id_cat)
 				FROM {db_prefix}categories');
-			list ($totals['cats']) = $smcFunc['db_fetch_row']($request);
+			list ($kittens) = $smcFunc['db_fetch_row']($request);
 			$smcFunc['db_free_result']($request);
 		}
 
-		if (isset($stat_choices[4]))
+		if (isset($this->stat_choices[4]))
 		{
-			// How many boards?
 			$request = $smcFunc['db_query']('', '
 				SELECT COUNT(id_board)
 				FROM {db_prefix}boards
@@ -46,53 +34,51 @@ class stats extends Module
 					'blank_redirect' => '',
 				)
 			);
-			list ($totals['boards']) = $smcFunc['db_fetch_row']($request);
+			list ($planks) = $smcFunc['db_fetch_row']($request);
 			$smcFunc['db_free_result']($request);
 		}
 
-		// Start the output.
+		return array_intersect_key(array(
+			['total_members', sprintf('<a href="%s?action=mlist">%s</a>', $scripturl, comma_format($modSettings['totalMembers']))],
+			['total_posts', comma_format($modSettings['totalMessages'])],
+			['total_topics', comma_format($modSettings['totalTopics'])],
+			['total_cats', comma_format($kittens)],
+			['total_boards', comma_format($planks)],
+			['most_online_today', comma_format($modSettings['mostOnlineToday'])],
+			['most_online_ever', comma_format($modSettings['mostOnline'])],
+		), $this->stat_choices);
+	}
+
+	private $totals = array();
+	private $stat_choices = array();
+
+	public function __construct(array $fields = null)
+	{
+		parent::__construct($fields);
+
+		$this->stat_choices = array_flip(explode(',', $this->fields['stat_choices']));
+		if (!empty($this->stat_choices))
+			$this->totals = $this->getTotals();
+	}
+
+	public function output()
+	{
+		global $txt;
+
+		if (empty($this->totals))
+		{
+			echo $this->error('empty');
+			return;
+		}
+
 		echo '
 					<ul class="stats bullet">';
 
-		foreach ($stat_choices as $type)
-		{
+		foreach ($this->totals as [$var, $val])
 			echo '
-						<li>';
+						<li>', $txt[$var] . ': ' . $val, '</li>';
 
-			switch ($type)
-			{
-				case 0:
-					echo $txt['total_members'] . ': <a href="' . $scripturl . '?action=mlist">' . comma_format($modSettings['totalMembers']) . '</a>';
-					break;
-				case 1:
-					echo $txt['total_posts'] . ': ' . comma_format($modSettings['totalMessages']);
-					break;
-				case 2:
-					echo $txt['total_topics'] . ': ' . comma_format($modSettings['totalTopics']);
-					break;
-				case 3:
-					echo $txt['total_cats'] . ': ' . comma_format($totals['cats']);
-					break;
-				case 4:
-					echo $txt['total_boards'] . ': ' . comma_format($totals['boards']);
-					break;
-				case 5:
-					echo $txt['most_online_today'] . ': ' . comma_format($modSettings['mostOnlineToday']);
-					break;
-				default: // case 6:
-					echo $txt['most_online_ever'] . ': ' . comma_format($modSettings['mostOnline']);
-					break;
-			}
-			echo '</li>';
-		}
 		echo '
 					</ul>';
-
-		// No longer need this.
-		unset($totals);
-
 	}
-	else
-		echo $this->error();
-}
 }
