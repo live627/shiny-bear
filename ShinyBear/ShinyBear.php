@@ -300,7 +300,7 @@ class ShinyBear
 		);
 
 		while (list ($name, $type, $value) = $smcFunc['db_fetch_row']($request))
-			$module_context[$type][$name] = $value;
+			$module_context[$type][$name]['value'] = $value;
 
 		return $module_context;
 	}
