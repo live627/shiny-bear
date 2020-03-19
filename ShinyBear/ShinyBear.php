@@ -56,6 +56,54 @@ class ShinyBear
 		return $skip_this;
 	}
 
+	private function getMatch($da_action)
+	{
+		$match = (!empty($_REQUEST['board']) ? '[board]=' . $_REQUEST['board'] : (!empty($_REQUEST['topic']) ? '[topic]=' . (int) $_REQUEST['topic'] : (!empty($_REQUEST['page']) ? '[page]=' . $_REQUEST['page'] : $da_action)));
+
+		return $match;
+	}
+
+	private function getGeneralMatch()
+	{
+		$general_match = (!empty($_REQUEST['board']) ? '[board]' : (!empty($_REQUEST['topic']) ? '[topic]' : (!empty($_REQUEST['page']) ? '[page]' : (!empty($_REQUEST['action']) ? '[all_actions]' : '[home]'))));
+
+		return $general_match;
+	}
+
+	private function getMatchedLayout($da_action)
+	{
+		global $smcFunc, $user_info;
+
+		$match = $this->getMatch($da_action);
+		$general_match = $this->getGeneralMatch();
+
+		$request = $smcFunc['db_query']('', '
+			SELECT
+				el.id_layout, action, id_member
+			FROM {db_prefix}sb_layouts AS el
+				INNER JOIN {db_prefix}sb_layout_actions AS ela ON (ela.id_layout = el.id_layout AND ela.action IN ({string:match}, {string:general_match}))
+			WHERE el.id_member IN (0, {int:current_member})',
+			array(
+				'match' => $match,
+				'general_match' => $general_match,
+				'current_member' => $user_info['id'],
+			)
+		);
+
+		while (list ($id_layout, $action, $id_member) = $smcFunc['db_fetch_row']($request))
+		{
+			if (
+				($action == $general_match && $id_member == $user_info['id'])
+				|| ($action == $match && $id_member == $user_info['id'])
+				|| ($action == $general_match && $id_member == 0)
+				|| ($action == $match && $id_member == 0)
+			)
+				return $id_layout;
+		}
+
+		return 0;
+	}
+
 	/**
 	 * Add Forum to the linktree.
 	 */
@@ -103,120 +151,32 @@ class ShinyBear
 		$context['sb_module_icon_dir'] = $boarddir . '/sb_extra/module_icons';
 		$context['sb_module_template'] = $boarddir . '/sb_extra/module_templates';
 
-		$curr_action = !empty($da_action) ? $da_action : '[home]';
-		$context['sb_home'] = $curr_action == '[home]';
-
-		$this->loadLayout($curr_action);
+		$this->loadLayout($da_action);
 	}
 
 	protected function loadLayout($url, $return = false)
 	{
-		global $smcFunc, $context, $scripturl, $sourcedir, $txt, $user_info;
+		global $smcFunc, $context, $scripturl, $txt, $user_info;
 
-		if (is_int($url))
-		{
-			$request = $smcFunc['db_query']('', '
-				SELECT
-					*, elp.id_layout_position
-				FROM {db_prefix}sb_layouts AS el
-					LEFT JOIN {db_prefix}sb_layout_positions AS elp ON (elp.id_layout = el.id_layout)
-					LEFT JOIN {db_prefix}sb_module_positions AS emp ON (emp.id_layout_position = elp.id_layout_position)
-					LEFT JOIN {db_prefix}sb_modules AS em ON (em.id_module = emp.id_module)
-				WHERE el.id_layout = {int:id_layout}',
-				array(
-					'zero' => 0,
-					'id_layout' => $url,
-				)
-			);
-		}
-		else
-		{
-			$match = (!empty($_REQUEST['board']) ? '[board]=' . $_REQUEST['board'] : (!empty($_REQUEST['topic']) ? '[topic]=' . (int) $_REQUEST['topic'] : (!empty($_REQUEST['page']) ? '[page]=' . $_REQUEST['page'] : $url)));
-			$general_match = (!empty($_REQUEST['board']) ? '[board]' : (!empty($_REQUEST['topic']) ? '[topic]' : (!empty($_REQUEST['page']) ? '[page]' : (!empty($_REQUEST['action']) ? '[all_actions]' : ''))));
-			$mmatch = $match;
-			$mgeneral_match = $general_match;
+		if (is_string($url))
+			$url = $this->getMatchedLayout($url);
 
-			$request = $smcFunc['db_query']('', '
-				SELECT
-					el.id_layout
-				FROM {db_prefix}sb_layouts AS el
-					INNER JOIN {db_prefix}sb_layout_actions AS ela ON (ela.id_layout = el.id_layout AND ela.action = {string:current_action})
-				WHERE el.id_member = {int:current_member}',
-				array(
-					'current_action' => $mmatch,
-					'current_member' => $user_info['id'],
-				)
-			);
+		$request = $smcFunc['db_query']('', '
+			SELECT
+				*, elp.id_layout_position
+			FROM {db_prefix}sb_layouts AS el
+				LEFT JOIN {db_prefix}sb_layout_positions AS elp ON (elp.id_layout = el.id_layout)
+				LEFT JOIN {db_prefix}sb_module_positions AS emp ON (emp.id_layout_position = elp.id_layout_position)
+				LEFT JOIN {db_prefix}sb_modules AS em ON (em.id_module = emp.id_module)
+			WHERE el.id_layout = {int:id_layout}',
+			array(
+				'id_layout' => $url,
+			)
+		);
+		$num = $smcFunc['db_num_rows']($request);
+		if (empty($num))
+			return;
 
-			$num2 = $smcFunc['db_num_rows']($request);
-			$smcFunc['db_free_result']($request);
-
-			if (empty($num2))
-				$mmatch = $mgeneral_match;
-
-			$request = $smcFunc['db_query']('', '
-				SELECT
-					el.id_member
-				FROM {db_prefix}sb_layouts AS el
-					INNER JOIN {db_prefix}sb_layout_actions AS ela ON (ela.id_layout = el.id_layout AND ela.action = {string:current_action})
-				WHERE el.id_member = {int:current_member}',
-				array(
-					'current_action' => $mmatch,
-					'current_member' => $user_info['id'],
-				)
-			);
-
-			list ($current_member) = $smcFunc['db_fetch_row']($request);
-			$smcFunc['db_free_result']($request);
-
-			if (empty($current_member))
-				$current_member = 0;
-
-			$request = $smcFunc['db_query']('', '
-				SELECT
-					el.id_layout
-				FROM {db_prefix}sb_layouts AS el
-					INNER JOIN {db_prefix}sb_layout_actions AS ela ON (ela.id_layout = el.id_layout AND ela.action = {string:current_action})
-				WHERE el.id_member = {int:zero}',
-				array(
-					'current_action' => $match,
-					'zero' => 0,
-				)
-			);
-
-			$num2 = $smcFunc['db_num_rows']($request);
-			$smcFunc['db_free_result']($request);
-
-			if (empty($num2))
-				$match = $general_match;
-
-			// If this is empty, e.g. index.php?action or index.php?action=
-			if (empty($match))
-			{
-				$match = '[home]';
-				$context['sb_home'] = true;
-			}
-
-			// Let's grab the data necessary to show the correct layout!
-			$request = $smcFunc['db_query']('', '
-				SELECT
-					*, elp.id_layout_position
-				FROM {db_prefix}sb_layouts AS el
-					JOIN {db_prefix}sb_layout_actions AS ela ON (ela.action = {string:current_action} AND ela.id_layout = el.id_layout)
-					LEFT JOIN {db_prefix}sb_layout_positions AS elp ON (elp.id_layout = el.id_layout)
-					LEFT JOIN {db_prefix}sb_module_positions AS emp ON (emp.id_layout_position = elp.id_layout_position)
-					LEFT JOIN {db_prefix}sb_modules AS em ON (em.id_module = emp.id_module)
-				WHERE el.id_member = {int:current_member}',
-				array(
-					'current_member' => $current_member,
-					'current_action' => empty($current_member) ? $match : $mmatch,
-				)
-			);
-
-			$num = $smcFunc['db_num_rows']($request);
-			if (empty($num))
-				return;
-		}
 		$sb_modules = array();
 		$loaded_ids = array();
 
